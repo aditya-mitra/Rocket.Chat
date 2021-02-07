@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import Header from '../../../components/Header';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -14,6 +14,7 @@ import MarkdownText from '../../../components/MarkdownText';
 import { roomTypes } from '../../../../app/utils';
 import { useUserRoom, useUserId } from '../../../contexts/UserContext';
 import { useUserData } from '../../../hooks/useUserData';
+import { useEndpointData } from '../../../hooks/useEndpointData';
 
 export default React.memo(({ room }) => {
 	const { isEmbedded, showTopNavbarEmbeddedLayout } = useLayout();
@@ -56,9 +57,13 @@ const RoomTitle = ({ room }) => {
 const DirectRoomHeader = ({ room }) => {
 	const userId = useUserId();
 	const directUserId = room.uids.filter((uid) => uid !== userId).shift();
-	const directUserData = useUserData(directUserId);
+	const directUserQuery = useMemo(() => ({ userId: directUserId }), [directUserId]);
 
-	return <RoomHeader room={room} topic={directUserData?.statusText} />;
+	const directUserData = useUserData(directUserId);
+	const { value: offlineDirectUserData } = useEndpointData('users.info', directUserQuery);
+	const roomTopic = directUserData?.statusText || offlineDirectUserData?.user?.statusText;
+
+	return <RoomHeader room={room} topic={roomTopic} />;
 };
 
 const RoomHeader = ({ room, topic }) => {
