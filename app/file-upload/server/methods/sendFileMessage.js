@@ -3,11 +3,13 @@ import { Match, check } from 'meteor/check';
 import { Random } from 'meteor/random';
 import _ from 'underscore';
 
-import { Uploads } from '../../../models';
+import { Uploads, Users } from '../../../models';
 import { Rooms } from '../../../models/server/raw';
 import { callbacks } from '../../../callbacks';
 import { FileUpload } from '../lib/FileUpload';
 import { canAccessRoom } from '../../../authorization/server/functions/canAccessRoom';
+import { ConsoleLogger } from '@slack/client/dist/logger';
+import {sendMessage} from '../../../lib'
 
 Meteor.methods({
 	async sendFileMessage(roomId, store, file, msgData = {}) {
@@ -88,4 +90,26 @@ Meteor.methods({
 
 		return msg;
 	},
+
+	// sendAVeryCustomMessage(){
+	// 	console.log('\n=====before run\n\n');
+
+	// 	const u = Users.findOneById('rocket.cat');
+	
+	// 	console.log('found user data is',u);
+	
+	// 	sendMessage(u,{msg:'rocketcat sent the message'},{_id:'xMPwZsT2Qia3ZXkjX'});
+	
+	// }
 });
+
+// Meteor.startup(()=>{
+// 	const custMsg = {
+// 		_id: Random.id(),
+// 		rid: 'xMPwZsT2Qia3ZXkjX',
+// 		ts: new Date(),
+// 		msg: 'custom message, who is the author',
+// 	};
+
+
+// })

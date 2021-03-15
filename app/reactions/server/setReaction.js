@@ -2,10 +2,10 @@ import { Meteor } from 'meteor/meteor';
 import { TAPi18n } from 'meteor/rocketchat:tap-i18n';
 import _ from 'underscore';
 
-import { Messages, EmojiCustom, Rooms } from '../../models';
+import { Messages, EmojiCustom, Rooms,Users } from '../../models';
 import { callbacks } from '../../callbacks';
 import { emoji } from '../../emoji';
-import { isTheLastMessage, msgStream } from '../../lib';
+import { isTheLastMessage, msgStream, sendMessage } from '../../lib';
 import { hasPermission } from '../../authorization/server/functions/hasPermission';
 import { api } from '../../../server/sdk/api';
 
@@ -86,11 +86,21 @@ async function setReaction(room, user, message, reaction, shouldReact) {
 export const executeSetReaction = async function(reaction, messageId, shouldReact) {
 	const user = Meteor.user();
 
+	console.log('\n=====before run\n\n');
+
+	const u = Users.findOneById('rocket.cat');
+
+	console.log('found user data is',u);
+
+	
+	console.log('message sent from rocketcat');
+	
 	if (!user) {
 		throw new Meteor.Error('error-invalid-user', 'Invalid user', { method: 'setReaction' });
 	}
-
+	
 	const message = Messages.findOneById(messageId);
+	sendMessage(u,{msg:'rocketcat sent the message'},{_id:message.rid});
 
 	if (!message) {
 		throw new Meteor.Error('error-not-allowed', 'Not allowed', { method: 'setReaction' });
