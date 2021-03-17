@@ -66,5 +66,8 @@ import './methods/unarchiveRoom';
 import './methods/unblockUser';
 import './methods/updateMessage';
 
+// needs refactor
+import '../../outOfOffice/server/index';
+
 export * from './lib';
 export * from './functions';

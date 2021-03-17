@@ -1,16 +1,29 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   Accordion,
   Box,
+  Button,
   Field,
   FieldGroup,
-  ToggleSwitch,
 } from "@rocket.chat/fuselage";
 
 import { useTranslation } from "../../../contexts/TranslationContext";
+import { useEndpointAction } from "../../../hooks/useEndpointAction";
 
 function PreferencesOutOfOffice({ ...props }) {
   const t = useTranslation();
+
+  const enableEndpoint = useEndpointAction(
+    "POST",
+    "users.outOfOffice",
+    { enable: true },
+    t("OUT OF OFFICE ENABLED")
+  );
+
+  const enableOutOfOffice = useCallback(async () => {
+    const result = await enableEndpoint();
+    console.log("the res from the endpoint action was", result);
+  }, [enableEndpoint]);
 
   return (
     <Accordion.Item title={t("Out Of Office")} {...props}>
@@ -24,7 +37,7 @@ function PreferencesOutOfOffice({ ...props }) {
           >
             <Field.Label>{t("Enable Out Of Office")}</Field.Label>
             <Field.Row>
-              <ToggleSwitch />
+              <Button onClick={enableOutOfOffice}>Enable</Button>
             </Field.Row>
           </Box>
           <Field.Hint>
