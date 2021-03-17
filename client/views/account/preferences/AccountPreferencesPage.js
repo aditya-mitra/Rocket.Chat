@@ -14,6 +14,7 @@ import PreferencesHighlightsSection from './PreferencesHighlightsSection';
 import PreferencesSoundSection from './PreferencesSoundSection';
 import PreferencesMyDataSection from './PreferencesMyDataSection';
 import PreferencesGlobalSection from './PreferencesGlobalSection';
+import PreferencesOutOfOffice from './PreferencesOutOfOffice';
 
 const AccountPreferencesPage = () => {
 	const t = useTranslation();
@@ -84,6 +85,7 @@ const AccountPreferencesPage = () => {
 					<PreferencesHighlightsSection commitRef={commitRef} onChange={onChange} />
 					<PreferencesSoundSection commitRef={commitRef} onChange={onChange} />
 					{dataDownloadEnabled && <PreferencesMyDataSection onChange={onChange} />}
+					<PreferencesOutOfOffice />
 				</Accordion>
 			</Box>
 		</Page.ScrollableContentWithShadow>
