@@ -482,6 +482,31 @@ API.v1.addRoute('users.update', { authRequired: true, twoFactorRequired: true },
 	},
 });
 
+API.v1.addRoute('users.outOfOffice',{authRequired:true},{
+	post(){
+		// add a toast similar to profile updated
+
+		check(this.bodyParams,Match.ObjectIncluding({
+			enable: Match.Maybe(Boolean),
+		}))
+
+		const {enable} = this.bodyParams;
+
+		if(enable===true){
+
+			Meteor.runAsUser(this.userId,()=>{
+				Meteor.call('enableUserOutOfOffice');
+			})
+		}else{
+			Meteor.runAsUser(this.userId,()=>{
+				Meteor.call('disableUserOutOfOffice');
+			})
+		}
+
+		return API.v1.success({outOfOffice:'enabled'});
+	}
+})
+
 API.v1.addRoute('users.updateOwnBasicInfo', { authRequired: true }, {
 	post() {
 		check(this.bodyParams, {
