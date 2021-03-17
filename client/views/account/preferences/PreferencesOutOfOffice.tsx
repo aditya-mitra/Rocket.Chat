@@ -20,10 +20,20 @@ function PreferencesOutOfOffice({ ...props }) {
     t("OUT OF OFFICE ENABLED")
   );
 
+  const disableEndpoint = useEndpointAction(
+    "POST",
+    "users.outOfOffice",
+    { enable: false },
+    t("OUT OF OFFICE DISABLED")
+  );
+
   const enableOutOfOffice = useCallback(async () => {
-    const result = await enableEndpoint();
-    console.log("the res from the endpoint action was", result);
+    await enableEndpoint();
   }, [enableEndpoint]);
+
+  const disableOutOfOffice = useCallback(async () => {
+    await disableEndpoint();
+  }, [disableEndpoint]);
 
   return (
     <Accordion.Item title={t("Out Of Office")} {...props}>
@@ -42,6 +52,22 @@ function PreferencesOutOfOffice({ ...props }) {
           </Box>
           <Field.Hint>
             {t("Will send a message telling that you are now out of office")}
+          </Field.Hint>
+        </Field>
+        <Field>
+          <Box
+            display="flex"
+            flexDirection="row"
+            justifyContent="spaceBetween"
+            flexGrow={1}
+          >
+            <Field.Label>{t("Disable Out Of Office")}</Field.Label>
+            <Field.Row>
+              <Button onClick={disableOutOfOffice}>Disable</Button>
+            </Field.Row>
+          </Box>
+          <Field.Hint>
+            {t("Will remove the deputy from the channels")}
           </Field.Hint>
         </Field>
       </FieldGroup>
