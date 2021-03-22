@@ -7,6 +7,7 @@ class UsersOutOfOffice extends Base {
     this.tryEnsureIndex({ userId: 1 }, { unique: true });
     this.tryEnsureIndex({ deputyId: 1 });
     this.tryEnsureIndex({ roomIds: 1 });
+    // user's custom message
   }
 
   // create
@@ -22,11 +23,11 @@ class UsersOutOfOffice extends Base {
 
   // read
 
-  getDocumentFromUserId(userId: string) {
+  getDocumentFromUserId(userId: string): Record<string, unknown> {
     return this.findOne({ userId });
   }
 
-  getOutOfOfficeRooms(userId: string) {
+  getOutOfOfficeRooms(userId: string): string[] {
     return this.findOne({ userId }, { fields: { roomIds: 1 } });
   }
 
