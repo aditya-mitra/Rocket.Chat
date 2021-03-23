@@ -30,8 +30,7 @@ Meteor.methods({
       }
 
       const myMessage = {
-        msg:
-          "I am now **out of office**. I have selected @mydeputy as my deputy.",
+        msg: `User @${myUser.username} is **out of office**. @mydeputy will be added as the assigning deputy for this user to this channel.`,
         rid: room._id,
       };
 
@@ -61,7 +60,7 @@ Meteor.methods({
       }
 
       const myMessage = {
-        msg: "I am now **back in office**. Thanks @mydeputy for helping",
+        msg: `User @${myUser.username} is **back in office**.`,
         rid: room._id,
       };
 

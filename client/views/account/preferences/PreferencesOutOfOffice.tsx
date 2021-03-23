@@ -1,29 +1,36 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo, useState} from "react";
 import {
   Accordion,
   Box,
   Button,
   Field,
   FieldGroup,
+  TextInput,
 } from "@rocket.chat/fuselage";
 
 import { useTranslation } from "../../../contexts/TranslationContext";
 import { useEndpointAction } from "../../../hooks/useEndpointAction";
+import { UserAutoComplete } from "../../../components/AutoComplete";
 
 function PreferencesOutOfOffice({ ...props }) {
   const t = useTranslation();
 
+  const [rooms, setRooms] = useState("");
+  const [deputy, setDeputy] = useState(""); // contains the usernames
+
+  const handleAddRooms = (e: any) => setRooms(e?.currentTarget.value);
+
   const enableEndpoint = useEndpointAction(
     "POST",
     "users.outOfOffice",
-    { enable: true },
+    useMemo(() => ({ enable: true, roomIds: rooms.split(",") }), [rooms]),
     t("OUT OF OFFICE ENABLED")
   );
 
   const disableEndpoint = useEndpointAction(
     "POST",
     "users.outOfOffice",
-    { enable: false },
+    useMemo(() => ({ enable: false }), []),
     t("OUT OF OFFICE DISABLED")
   );
 
@@ -35,9 +42,24 @@ function PreferencesOutOfOffice({ ...props }) {
     await disableEndpoint();
   }, [disableEndpoint]);
 
+  console.log(deputy);
+
   return (
+    // change the buttons to toggle switches so that useForm can be used
     <Accordion.Item title={t("Out Of Office")} {...props}>
       <FieldGroup>
+        <Field>
+          <Field.Label>{t("Select channels for out of office")}</Field.Label>
+          <Field.Row>
+            <TextInput onChange={handleAddRooms} value={rooms} />
+          </Field.Row>
+        </Field>
+        <Field>
+          <Field.Label>{t("Select the assigning deputy")}</Field.Label>
+          <Field.Row>
+            <UserAutoComplete value={deputy} onChange={setDeputy} />
+          </Field.Row>
+        </Field>
         <Field>
           <Box
             display="flex"

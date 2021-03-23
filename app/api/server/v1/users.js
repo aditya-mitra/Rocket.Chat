@@ -523,8 +523,8 @@ API.v1.addRoute('users.outOfOffice',{authRequired:true},{
 		// add a toast similar to profile updated
 
 		check(this.bodyParams,Match.ObjectIncluding({
-			enable: Match.Maybe(Boolean),
-			rooms:Match.Maybe(Array)
+			enable: Boolean,
+			roomIds:Match.Maybe(Array)
 		}))
 
 		const {enable} = this.bodyParams;

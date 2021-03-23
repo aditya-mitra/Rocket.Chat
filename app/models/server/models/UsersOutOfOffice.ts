@@ -7,7 +7,8 @@ class UsersOutOfOffice extends Base {
     this.tryEnsureIndex({ userId: 1 }, { unique: true });
     this.tryEnsureIndex({ deputyId: 1 });
     this.tryEnsureIndex({ roomIds: 1 });
-    // user's custom message
+    // store user's custom message
+    // store if deputy was already added in the room
   }
 
   // create
@@ -28,7 +29,8 @@ class UsersOutOfOffice extends Base {
   }
 
   getOutOfOfficeRooms(userId: string): string[] {
-    return this.findOne({ userId }, { fields: { roomIds: 1 } });
+    const doc = this.findOne({ userId }, { fields: { roomIds: 1 } });
+    return doc && doc.roomIds ? doc.roomIds : [];
   }
 
   // update
@@ -49,13 +51,9 @@ class UsersOutOfOffice extends Base {
 
   // destroy
 
-  /**
-   * remove a document
-   * the `getDocumentFromUserId` function first to get it
-   * @param _id id of the document to be removed
-   */
-  removeUserOutOfOffice(_id: string) {
-    return this.remove(_id);
+  removeUserOutOfOffice(userId: string) {
+    const doc = this.findOne({ userId });
+    return this.remove(doc._id);
   }
 }
 
