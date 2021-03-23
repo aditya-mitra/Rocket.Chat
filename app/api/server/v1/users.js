@@ -524,7 +524,8 @@ API.v1.addRoute('users.outOfOffice',{authRequired:true},{
 
 		check(this.bodyParams,Match.ObjectIncluding({
 			enable: Boolean,
-			roomIds:Match.Maybe(Array)
+			roomIds: Match.Maybe(Array),
+			deputyUsername: Match.Maybe(String)
 		}))
 
 		const {enable} = this.bodyParams;
@@ -532,7 +533,7 @@ API.v1.addRoute('users.outOfOffice',{authRequired:true},{
 		if(enable===true){
 
 			Meteor.runAsUser(this.userId,()=>{
-				Meteor.call('enableUserOutOfOffice',this.bodyParams.roomIds);
+				Meteor.call('enableUserOutOfOffice',this.bodyParams.roomIds, this.bodyParams.deputyUsername);
 			})
 		}else{
 			Meteor.runAsUser(this.userId,()=>{

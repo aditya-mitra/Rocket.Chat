@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState} from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Accordion,
   Box,
@@ -23,7 +23,14 @@ function PreferencesOutOfOffice({ ...props }) {
   const enableEndpoint = useEndpointAction(
     "POST",
     "users.outOfOffice",
-    useMemo(() => ({ enable: true, roomIds: rooms.split(",") }), [rooms]),
+    useMemo(
+      () => ({
+        enable: true,
+        roomIds: rooms.split(","),
+        deputyUsername: deputy,
+      }),
+      [rooms, deputy]
+    ),
     t("OUT OF OFFICE ENABLED")
   );
 
@@ -41,8 +48,6 @@ function PreferencesOutOfOffice({ ...props }) {
   const disableOutOfOffice = useCallback(async () => {
     await disableEndpoint();
   }, [disableEndpoint]);
-
-  console.log(deputy);
 
   return (
     // change the buttons to toggle switches so that useForm can be used

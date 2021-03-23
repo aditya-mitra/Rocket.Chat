@@ -33,6 +33,20 @@ class UsersOutOfOffice extends Base {
     return doc && doc.roomIds ? doc.roomIds : [];
   }
 
+  getOutOfOfficeRoomsAndDeputy(
+    userId: string
+  ): { roomIds: string[]; deputyId: string } {
+    const doc = this.findOne(
+      { userId },
+      { fields: { roomIds: 1, deputyId: 1 } }
+    );
+
+    return {
+      roomIds: doc.roomIds,
+      deputyId: doc.deputyId,
+    };
+  }
+
   // update
 
   updateUserOutOfOffice(docId: string, deputyId: string, roomIds: string[]) {
