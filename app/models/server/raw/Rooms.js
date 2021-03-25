@@ -42,6 +42,11 @@ export class RoomsRaw extends BaseRaw {
 		return statistic;
 	}
 
+	/**@typedef {{fields:object,sort:object,skip:number,limit:number}} options*/
+
+	/**
+	 * @param {options} options 
+	 */
 	findByNameContainingAndTypes(name, types, discussion = false, teams = false, options = {}) {
 		const nameRegex = new RegExp(escapeRegExp(name).trim(), 'i');
 
@@ -50,6 +55,8 @@ export class RoomsRaw extends BaseRaw {
 				$exists: false,
 			},
 		};
+
+		const {fields,skip,limit,sort} = options
 
 		const query = {
 			t: {
@@ -65,7 +72,36 @@ export class RoomsRaw extends BaseRaw {
 			],
 			...teamCondition,
 		};
-		return this.find(query, options);
+
+		return this.col.aggregate([
+			{
+				$match:query
+			},
+			{
+				$project:fields
+			},
+			{
+				$addFields:{
+					nameInsensitive:{
+						$toLower:'$name'
+					}
+				}
+			},
+			{
+				$skip:skip
+			},
+			{
+				$limit:limit
+			},
+			{
+				$sort:{
+					nameInsensitive:1,
+					...sort
+				}
+			}
+
+		])
+		// return this.find(query, options);
 	}
 
 	findByTypes(types, discussion = false, teams = false, options = {}) {

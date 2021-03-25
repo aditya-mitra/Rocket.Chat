@@ -51,9 +51,13 @@ export async function findAdminRooms({ uid, filter, types = [], pagination: { of
 		cursor = Rooms.findByNameContaining(name, discussion, includeTeams, options);
 	}
 
+	// console.log('the cursor is now\n',cursor)
+
 	const total = await cursor.count();
 
 	const rooms = await cursor.toArray();
+
+	console.log('thr rooms are\n',rooms,'\n\nrooms');
 
 	return {
 		rooms,
