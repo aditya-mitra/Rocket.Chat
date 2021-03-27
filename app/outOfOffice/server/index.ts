@@ -4,9 +4,12 @@ import { Users, Rooms, OutOfOffice } from "../../models/server";
 import { executeSendMessage } from "../../lib/server/methods/sendMessage";
 import { addUserToRoom } from "../../lib/server/functions/addUserToRoom";
 import { removeUserFromRoom } from "../../lib/server/functions/removeUserFromRoom";
+import { getMentions } from "../../lib/server/lib/notifyUsersOnMessage";
+import { callbacks } from "../../callbacks/server";
 
 import { IUser } from "../../../definition/IUser";
 import { IRoom } from "../../../definition/IRoom";
+import { IMessage } from "../../../definition/IMessage";
 
 // const kameUserId = "JMXwCKiQ9v28Hf7Ef";
 // const camelRidersRoomId = "mPcbxJxRzzjwdCF7f";
@@ -88,3 +91,45 @@ Meteor.methods({
     OutOfOffice.removeUserOutOfOffice(this.userId);
   },
 });
+
+function sendReply(message: IMessage, room: IRoom) {
+  // get the mention from the message
+
+  const {
+    mentionIds,
+  }: { mentionIds: string[]; toHere: boolean; toAll: boolean } = getMentions(
+    message as any
+  );
+
+  if (Array.isArray(mentionIds) && mentionIds.length === 0) {
+    return;
+  }
+
+  // get the users who are out of office
+
+  const docs = OutOfOffice.getUsersAndDeputysFromUserIds(mentionIds);
+
+  if (docs.length === 0) {
+    return;
+  }
+
+  // aditya-todo: handle the corner case when multiple users are out of office and mentioned in the same message
+
+  const myMessage = {
+    // send the custom message only if it is thread
+    // else send the proper information message with the deputy name
+    msg: "To be replaced with custom message of the user",
+    rid: room._id,
+    tmid: (message as any).tmid,
+  };
+  executeSendMessage("rocket.cat", myMessage);
+
+  return message;
+}
+
+callbacks.add(
+  "afterSaveMessage",
+  sendReply,
+  callbacks.priority.LOW,
+  "listen-for-oof"
+);

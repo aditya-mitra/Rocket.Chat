@@ -4,14 +4,19 @@ class UsersOutOfOffice extends Base {
   constructor() {
     super("users_out_of_office");
 
+    // aditya-todo change the model to contain:
+    //  username, name, and _id of the oof user
+    //  username, name and _di of the deputy
+    // no need to ensure the index of all, just store the type in the interface IOutOfOfficeModel
     this.tryEnsureIndex({ userId: 1 }, { unique: true });
     this.tryEnsureIndex({ deputyId: 1 });
     this.tryEnsureIndex({ roomIds: 1 });
-    // store user's custom message
-    // store if deputy was already added in the room
+    // store user's custom message. also check that the user did not do a mention in his custom message
+    // store if deputy was already added in the room. 
   }
 
   // create
+
   createUserOutOfOffice(userId: string, deputyId: string, roomIds: string[]) {
     const data = {
       userId,
@@ -24,7 +29,7 @@ class UsersOutOfOffice extends Base {
 
   // read
 
-  getDocumentFromUserId(userId: string): Record<string, unknown> {
+  getDocumentFromUserId(userId: string): IOutOfOfficeModel {
     return this.findOne({ userId });
   }
 
@@ -45,6 +50,25 @@ class UsersOutOfOffice extends Base {
       roomIds: doc.roomIds,
       deputyId: doc.deputyId,
     };
+  }
+
+  getUsersAndDeputysFromUserIds(
+    userIds: string[]
+  ): Pick<IOutOfOfficeModel, "_id" | "userId" | "deputyId">[] {
+    const query = {
+      userId: { $in: userIds },
+    };
+
+    const project = {
+      userId: 1,
+      deputyId: 1,
+    };
+
+    const cursor = this.find(query, project);
+
+    const users = Promise.await(cursor.fetch());
+
+    return users;
   }
 
   // update
@@ -69,6 +93,13 @@ class UsersOutOfOffice extends Base {
     const doc = this.findOne({ userId });
     return this.remove(doc._id);
   }
+}
+
+interface IOutOfOfficeModel {
+  _id: string;
+  userId: string;
+  deputyId: string;
+  rooms: string[];
 }
 
 export default new UsersOutOfOffice();
