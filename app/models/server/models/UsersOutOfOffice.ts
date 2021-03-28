@@ -12,7 +12,9 @@ class UsersOutOfOffice extends Base {
     this.tryEnsureIndex({ deputyId: 1 });
     this.tryEnsureIndex({ roomIds: 1 });
     // store user's custom message. also check that the user did not do a mention in his custom message
-    // store if deputy was already added in the room. 
+    // store user's custom message
+    // store if deputy was already added in the room
+    // store if user was already mentioned in the main channel
   }
 
   // create
@@ -66,7 +68,7 @@ class UsersOutOfOffice extends Base {
 
     const cursor = this.find(query, project);
 
-    const users = Promise.await(cursor.fetch());
+    const users = (Promise as any).await(cursor.fetch());
 
     return users;
   }
@@ -100,6 +102,7 @@ interface IOutOfOfficeModel {
   userId: string;
   deputyId: string;
   rooms: string[];
+  customMessage: string;
 }
 
 export default new UsersOutOfOffice();

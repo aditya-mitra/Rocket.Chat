@@ -16,18 +16,18 @@ import { IMessage } from "../../../definition/IMessage";
 // const deputyUserId = "8hWHiTdK7yTEsXCxo";
 
 Meteor.methods({
-  enableUserOutOfOffice(roomIds: string[], deputyUsername: string) {
+  enableUserOutOfOffice({ roomIds, deputyUsername }: IEnableOptionProps) {
     if (!this.userId) {
       throw new Meteor.Error("error-invalid-user", "Invalid user", {
         method: "enableUserOutOfOffice",
       });
     }
 
-    const myUser: IUser = Users.findOneById(this.userId);
+    const currentUser: IUser = Users.findOneById(this.userId);
     const defaultBot: IUser = Users.findOneById("rocket.cat");
-    const myDeputy: IUser = Users.findOneByUsername(deputyUsername);
+    const deputyUser: IUser = Users.findOneByUsername(deputyUsername);
 
-    if (myUser._id === myDeputy._id) {
+    if (currentUser._id === deputyUser._id) {
       throw new Meteor.Error(
         "error-invalid-deputy",
         "Deputy cannot be the same user",
@@ -43,16 +43,16 @@ Meteor.methods({
         continue;
       }
 
-      const myMessage = {
-        msg: `User @${myUser.username} is **out of office**. @${myDeputy.username} will be added as the assigning deputy for this user to this channel.`,
+      const outOfficeEnabledMessage = {
+        msg: `User @${currentUser.username} is **out of office**. @${deputyUser.username} will be added as the assigning deputy for this user to this channel.`,
         rid: room._id,
       };
 
-      executeSendMessage(defaultBot._id, myMessage);
-      addUserToRoom(room._id, myDeputy, myUser, false);
+      executeSendMessage(defaultBot._id, outOfficeEnabledMessage);
+      addUserToRoom(room._id, deputyUser, currentUser, false);
     }
 
-    OutOfOffice.createUserOutOfOffice(this.userId, myDeputy._id, roomIds);
+    OutOfOffice.createUserOutOfOffice(this.userId, deputyUser._id, roomIds);
   },
   disableUserOutOfOffice() {
     if (!this.userId) {
@@ -65,9 +65,9 @@ Meteor.methods({
       this.userId
     );
 
-    const myUser: IUser = Users.findOneById(this.userId);
+    const currentUser: IUser = Users.findOneById(this.userId);
     const defaultBot: IUser = Users.findOneById("rocket.cat");
-    const myDeputy: IUser = Users.findOneById(deputyId);
+    const deputyUser: IUser = Users.findOneById(deputyId);
 
     for (const roomId of roomIds) {
       const room: IRoom = Rooms.findOneById(roomId);
@@ -77,7 +77,7 @@ Meteor.methods({
       }
 
       const myMessage = {
-        msg: `User @${myUser.username} is **back in office**.`,
+        msg: `User @${currentUser.username} is **back in office**.`,
         rid: room._id,
       };
 
@@ -85,7 +85,7 @@ Meteor.methods({
       executeSendMessage(defaultBot._id, myMessage);
 
       // remove the deputy from that room
-      removeUserFromRoom(room._id, myDeputy, { byUser: myUser });
+      removeUserFromRoom(room._id, deputyUser, { byUser: currentUser });
     }
 
     OutOfOffice.removeUserOutOfOffice(this.userId);
@@ -101,13 +101,14 @@ function sendReply(message: IMessage, room: IRoom) {
     message as any
   );
 
-  if (Array.isArray(mentionIds) && mentionIds.length === 0) {
+  if (!mentionIds || mentionIds.length === 0) {
     return;
   }
 
   // get the users who are out of office
 
   const docs = OutOfOffice.getUsersAndDeputysFromUserIds(mentionIds);
+  console.log("checking this one", docs, "\nand\n", mentionIds);
 
   if (docs.length === 0) {
     return;
@@ -133,3 +134,9 @@ callbacks.add(
   callbacks.priority.LOW,
   "listen-for-oof"
 );
+
+interface IEnableOptionProps {
+  roomIds: string[];
+  deputyUsername: string;
+  customMessage: string;
+}

@@ -6,6 +6,7 @@ import {
   Field,
   FieldGroup,
   TextInput,
+  TextAreaInput,
 } from "@rocket.chat/fuselage";
 
 import { useTranslation } from "../../../contexts/TranslationContext";
@@ -13,7 +14,7 @@ import { useEndpointAction } from "../../../hooks/useEndpointAction";
 import { UserAutoComplete } from "../../../components/AutoComplete";
 
 function PreferencesOutOfOffice({ ...props }) {
-  const t = useTranslation();
+  const t = useTranslation() as any;
 
   const [rooms, setRooms] = useState("");
   const [deputy, setDeputy] = useState(""); // contains the usernames
@@ -22,7 +23,7 @@ function PreferencesOutOfOffice({ ...props }) {
 
   const enableEndpoint = useEndpointAction(
     "POST",
-    "users.outOfOffice",
+    "users.outOfOffice.enable",
     useMemo(
       () => ({
         enable: true,
@@ -36,7 +37,7 @@ function PreferencesOutOfOffice({ ...props }) {
 
   const disableEndpoint = useEndpointAction(
     "POST",
-    "users.outOfOffice",
+    "users.outOfOffice.disable",
     useMemo(() => ({ enable: false }), []),
     t("OUT OF OFFICE DISABLED")
   );
@@ -54,15 +55,25 @@ function PreferencesOutOfOffice({ ...props }) {
     <Accordion.Item title={t("Out Of Office")} {...props}>
       <FieldGroup>
         <Field>
-          <Field.Label>{t("Select channels for out of office")}</Field.Label>
+          <Field.Label>
+            {t("Select the Channels for Out of Office")}
+          </Field.Label>
           <Field.Row>
-            <TextInput onChange={handleAddRooms} value={rooms} />
+            <TextInput
+              onChange={handleAddRooms}
+              value={rooms}
+              placeholder={"channels to be selected"}
+            />
           </Field.Row>
         </Field>
         <Field>
           <Field.Label>{t("Select the assigning deputy")}</Field.Label>
           <Field.Row>
-            <UserAutoComplete value={deputy} onChange={setDeputy} />
+            <UserAutoComplete
+              value={deputy}
+              onChange={setDeputy}
+              placeholder={"select the users"}
+            />
           </Field.Row>
         </Field>
         <Field>
@@ -95,6 +106,21 @@ function PreferencesOutOfOffice({ ...props }) {
           </Box>
           <Field.Hint>
             {t("Will remove the deputy from the channels")}
+          </Field.Hint>
+        </Field>
+        <Field>
+          <Field.Label>{t("Custom Message")}</Field.Label>
+          <Field.Row>
+            <TextAreaInput
+              value={`Sorry, I am currently Out of Office! 
+Can you please redirect your messages to my assigning deputy. Thank you`}
+              rows={2}
+            />
+          </Field.Row>
+          <Field.Hint>
+            {t(
+              "A message that will be sent to the channel when you are being mentioned"
+            )}
           </Field.Hint>
         </Field>
       </FieldGroup>

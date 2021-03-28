@@ -518,30 +518,40 @@ API.v1.addRoute('users.update', { authRequired: true, twoFactorRequired: true },
 	},
 });
 
-API.v1.addRoute('users.outOfOffice',{authRequired:true},{
+API.v1.addRoute('users.outOfOffice.enable',{authRequired:true},{
 	post(){
 		// add a toast similar to profile updated
 
 		check(this.bodyParams,Match.ObjectIncluding({
-			enable: Boolean,
-			roomIds: Match.Maybe(Array),
-			deputyUsername: Match.Maybe(String)
+			roomIds: Array,
+			deputyUsername: String
 		}))
 
-		const {enable} = this.bodyParams;
-
-		if(enable===true){
+		const {roomIds,deputyUsername} = this.bodyParams;
 
 			Meteor.runAsUser(this.userId,()=>{
-				Meteor.call('enableUserOutOfOffice',this.bodyParams.roomIds, this.bodyParams.deputyUsername);
+				Meteor.call('enableUserOutOfOffice',{roomIds,deputyUsername});
 			})
-		}else{
-			Meteor.runAsUser(this.userId,()=>{
-				Meteor.call('disableUserOutOfOffice');
-			})
-		}
 
 		return API.v1.success({outOfOffice:'enabled'});
+	},
+	
+})
+
+API.v1.addRoute('users.outOfOffice.disable',{authRequired:true},{
+	post(){
+		Meteor.runAsUser(this.userId,()=>{
+			Meteor.call('disableUserOutOfOffice');
+		})
+		return API.v1.success({outOfOffice:'disabled'});
+	}
+})
+
+API.v1.addRoute('users.outOfOffice.check',{authRequired:true},{
+	get(){
+		// aditya-todo: import checkIfUserIsOutOfOffice from 'app/lib/server/functions'
+		const flag = checkIfUserIsOutOfOffice(this.userId);
+		return API.v1.success({outOfOffice:flag})
 	}
 })
 
