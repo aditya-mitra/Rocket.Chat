@@ -16,12 +16,18 @@ import { IMessage } from "../../../definition/IMessage";
 // const deputyUserId = "8hWHiTdK7yTEsXCxo";
 
 Meteor.methods({
-  enableUserOutOfOffice({ roomIds, deputyUsername }: IEnableOptionProps) {
+  enableUserOutOfOffice({
+    roomIds,
+    deputyUsername,
+    customMessage,
+  }: IEnableOptionProps) {
     if (!this.userId) {
       throw new Meteor.Error("error-invalid-user", "Invalid user", {
         method: "enableUserOutOfOffice",
       });
     }
+
+    console.log("the customMessage was", customMessage);
 
     const currentUser: IUser = Users.findOneById(this.userId);
     const defaultBot: IUser = Users.findOneById("rocket.cat");

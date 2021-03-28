@@ -527,10 +527,10 @@ API.v1.addRoute('users.outOfOffice.enable',{authRequired:true},{
 			deputyUsername: String
 		}))
 
-		const {roomIds,deputyUsername} = this.bodyParams;
+		const {roomIds,deputyUsername,customMessage} = this.bodyParams;
 
 			Meteor.runAsUser(this.userId,()=>{
-				Meteor.call('enableUserOutOfOffice',{roomIds,deputyUsername});
+				Meteor.call('enableUserOutOfOffice',{roomIds,deputyUsername,customMessage});
 			})
 
 		return API.v1.success({outOfOffice:'enabled'});

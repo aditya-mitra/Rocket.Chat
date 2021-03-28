@@ -18,6 +18,11 @@ function PreferencesOutOfOffice({ ...props }) {
 
   const [rooms, setRooms] = useState("");
   const [deputy, setDeputy] = useState(""); // contains the usernames
+  const [
+    customMessage,
+    setCustomMessage,
+  ] = useState(`Sorry, I am currently Out of Office! 
+Can you please redirect your messages to my assigning deputy. Thank you`);
 
   const handleAddRooms = (e: any) => setRooms(e?.currentTarget.value);
 
@@ -29,8 +34,9 @@ function PreferencesOutOfOffice({ ...props }) {
         enable: true,
         roomIds: rooms.split(","),
         deputyUsername: deputy,
+        customMessage,
       }),
-      [rooms, deputy]
+      [rooms, deputy, customMessage]
     ),
     t("OUT OF OFFICE ENABLED")
   );
@@ -70,6 +76,8 @@ function PreferencesOutOfOffice({ ...props }) {
           <Field.Label>{t("Select the assigning deputy")}</Field.Label>
           <Field.Row>
             <UserAutoComplete
+              /*
+            // @ts-ignore */
               value={deputy}
               onChange={setDeputy}
               placeholder={"select the users"}
@@ -112,8 +120,8 @@ function PreferencesOutOfOffice({ ...props }) {
           <Field.Label>{t("Custom Message")}</Field.Label>
           <Field.Row>
             <TextAreaInput
-              value={`Sorry, I am currently Out of Office! 
-Can you please redirect your messages to my assigning deputy. Thank you`}
+              value={customMessage}
+              onChange={(e) => setCustomMessage((e.target as any).value)}
               rows={2}
             />
           </Field.Row>
