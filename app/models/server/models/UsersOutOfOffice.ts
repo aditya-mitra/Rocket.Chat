@@ -24,12 +24,14 @@ class UsersOutOfOffice extends Base {
     deputyId,
     roomIds,
     customMessage,
+    alreadyPresentRoomIds,
   }: Omit<IOutOfOfficeModel, "_id">) {
     const data = {
       userId,
       deputyId,
       roomIds,
       customMessage,
+      alreadyPresentRoomIds,
     };
 
     return this.insert(data);
@@ -102,6 +104,7 @@ interface IOutOfOfficeModel {
   deputyId: string;
   roomIds: string[];
   customMessage: string;
+  alreadyPresentRoomIds: string[];
 }
 
 export default new UsersOutOfOffice();

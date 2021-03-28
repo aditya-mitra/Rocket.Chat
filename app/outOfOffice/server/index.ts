@@ -1,6 +1,6 @@
 import { Meteor } from "meteor/meteor";
 
-import { Users, Rooms, OutOfOffice } from "../../models/server";
+import { Users, Rooms, Subscriptions, OutOfOffice } from "../../models/server";
 import { executeSendMessage } from "../../lib/server/methods/sendMessage";
 import { addUserToRoom } from "../../lib/server/functions/addUserToRoom";
 import { removeUserFromRoom } from "../../lib/server/functions/removeUserFromRoom";
@@ -27,8 +27,6 @@ Meteor.methods({
       });
     }
 
-    console.log("the customMessage was", customMessage);
-
     const currentUser: IUser = Users.findOneById(this.userId);
     const defaultBot: IUser = Users.findOneById("rocket.cat");
     const deputyUser: IUser = Users.findOneByUsername(deputyUsername);
@@ -43,8 +41,24 @@ Meteor.methods({
       );
     }
 
+    const alreadyPresentRoomIds: string[] = [];
+
     for (const roomId of roomIds) {
       const room: IRoom = Rooms.findOneById(roomId);
+
+      const sub = Subscriptions.findByRoomIdAndUserIds(
+        // this will produce an array with 1 element containing the roomId
+        roomId,
+        [deputyUser._id],
+        { fields: { rid: 1 } }
+      ).fetch();
+      console.log("the sub was", sub);
+
+      if (Array.isArray(sub) && sub.length > 0 && sub[0].rid === room._id) {
+        // the user was already present in the room. do not remove him
+        alreadyPresentRoomIds.push(room._id);
+      }
+
       if (!room) {
         continue;
       }
@@ -58,11 +72,17 @@ Meteor.methods({
       addUserToRoom(room._id, deputyUser, currentUser, false);
     }
 
+    console.log(
+      "the already present rooms were -- enabled --",
+      alreadyPresentRoomIds
+    );
+
     OutOfOffice.createUserOutOfOffice({
       userId: this.userId,
       deputyId: deputyUser._id,
       roomIds,
       customMessage,
+      alreadyPresentRoomIds,
     });
   },
   disableUserOutOfOffice() {
@@ -72,13 +92,17 @@ Meteor.methods({
       });
     }
 
-    const { roomIds, deputyId } = OutOfOffice.getOutOfOfficeRoomsAndDeputy(
-      this.userId
-    );
+    const {
+      roomIds,
+      deputyId,
+      alreadyPresentRoomIds,
+    } = OutOfOffice.getDocumentFromUserId(this.userId);
 
     const currentUser: IUser = Users.findOneById(this.userId);
     const defaultBot: IUser = Users.findOneById("rocket.cat");
     const deputyUser: IUser = Users.findOneById(deputyId);
+
+    console.log("the already present rooms were", alreadyPresentRoomIds);
 
     for (const roomId of roomIds) {
       const room: IRoom = Rooms.findOneById(roomId);
@@ -96,7 +120,9 @@ Meteor.methods({
       executeSendMessage(defaultBot._id, myMessage);
 
       // remove the deputy from that room
-      removeUserFromRoom(room._id, deputyUser, { byUser: currentUser });
+      if (!alreadyPresentRoomIds.includes(room._id)) {
+        removeUserFromRoom(room._id, deputyUser, { byUser: currentUser });
+      }
     }
 
     OutOfOffice.removeUserOutOfOffice(this.userId);
@@ -117,7 +143,13 @@ function sendReply(message: IMessage, room: IRoom) {
   }
 
   for (const mentionId of mentionIds) {
-    const { customMessage } = OutOfOffice.getDeputyAndCustomMessage(mentionId);
+    const foundDoc = OutOfOffice.getDeputyAndCustomMessage(mentionId);
+
+    if (!foundDoc) {
+      continue;
+    }
+
+    const { customMessage } = foundDoc;
 
     const myMessage = {
       // send the custom message only if it is thread
