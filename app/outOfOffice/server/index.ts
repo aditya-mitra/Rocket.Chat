@@ -58,7 +58,12 @@ Meteor.methods({
       addUserToRoom(room._id, deputyUser, currentUser, false);
     }
 
-    OutOfOffice.createUserOutOfOffice(this.userId, deputyUser._id, roomIds);
+    OutOfOffice.createUserOutOfOffice({
+      userId: this.userId,
+      deputyId: deputyUser._id,
+      roomIds,
+      customMessage,
+    });
   },
   disableUserOutOfOffice() {
     if (!this.userId) {
@@ -111,25 +116,21 @@ function sendReply(message: IMessage, room: IRoom) {
     return;
   }
 
-  // get the users who are out of office
+  for (const mentionId of mentionIds) {
+    const { customMessage } = OutOfOffice.getDeputyAndCustomMessage(mentionId);
 
-  const docs = OutOfOffice.getUsersAndDeputysFromUserIds(mentionIds);
-  console.log("checking this one", docs, "\nand\n", mentionIds);
-
-  if (docs.length === 0) {
-    return;
+    const myMessage = {
+      // send the custom message only if it is thread
+      // else send the proper information message with the deputy name
+      msg: customMessage,
+      rid: room._id,
+      tmid: (message as any).tmid,
+    };
+    // also notify the deputy (do not use mention in the message itself to avoid case when deputy has left the room before disabling)
+    executeSendMessage("rocket.cat", myMessage);
   }
 
   // aditya-todo: handle the corner case when multiple users are out of office and mentioned in the same message
-
-  const myMessage = {
-    // send the custom message only if it is thread
-    // else send the proper information message with the deputy name
-    msg: "To be replaced with custom message of the user",
-    rid: room._id,
-    tmid: (message as any).tmid,
-  };
-  executeSendMessage("rocket.cat", myMessage);
 
   return message;
 }

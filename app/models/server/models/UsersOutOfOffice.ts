@@ -6,7 +6,7 @@ class UsersOutOfOffice extends Base {
 
     // aditya-todo change the model to contain:
     //  username, name, and _id of the oof user
-    //  username, name and _di of the deputy
+    //  username, name and _id of the deputy
     // no need to ensure the index of all, just store the type in the interface IOutOfOfficeModel
     this.tryEnsureIndex({ userId: 1 }, { unique: true });
     this.tryEnsureIndex({ deputyId: 1 });
@@ -19,11 +19,17 @@ class UsersOutOfOffice extends Base {
 
   // create
 
-  createUserOutOfOffice(userId: string, deputyId: string, roomIds: string[]) {
+  createUserOutOfOffice({
+    userId,
+    deputyId,
+    roomIds,
+    customMessage,
+  }: Omit<IOutOfOfficeModel, "_id">) {
     const data = {
       userId,
       deputyId,
       roomIds,
+      customMessage,
     };
 
     return this.insert(data);
@@ -54,28 +60,21 @@ class UsersOutOfOffice extends Base {
     };
   }
 
-  getUsersAndDeputysFromUserIds(
-    userIds: string[]
-  ): Pick<IOutOfOfficeModel, "_id" | "userId" | "deputyId">[] {
-    const query = {
-      userId: { $in: userIds },
-    };
-
-    const project = {
-      userId: 1,
-      deputyId: 1,
-    };
-
-    const cursor = this.find(query, project);
-
-    const users = (Promise as any).await(cursor.fetch());
-
-    return users;
+  getDeputyAndCustomMessage(
+    userId: string
+  ): Pick<IOutOfOfficeModel, "_id" | "deputyId" | "customMessage"> {
+    return this.findOne(
+      { userId },
+      { fields: { deputyId: 1, customMessage: 1 } }
+    );
   }
 
   // update
 
-  updateUserOutOfOffice(docId: string, deputyId: string, roomIds: string[]) {
+  updateUserOutOfOffice(
+    docId: string,
+    { deputyId, roomIds }: Omit<IOutOfOfficeModel, "_id" | "userId">
+  ) {
     return this.update(
       {
         _id: docId,
@@ -101,7 +100,7 @@ interface IOutOfOfficeModel {
   _id: string;
   userId: string;
   deputyId: string;
-  rooms: string[];
+  roomIds: string[];
   customMessage: string;
 }
 
