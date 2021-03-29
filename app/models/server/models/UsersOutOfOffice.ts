@@ -4,7 +4,7 @@ class UsersOutOfOffice extends Base {
   constructor() {
     super("users_out_of_office");
 
-    // aditya-todo change the model to contain:
+    // discuss later
     //  username, name, and _id of the oof user
     //  username, name and _id of the deputy
     //  BUT these are subject to change like renaming

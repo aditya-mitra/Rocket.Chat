@@ -132,14 +132,14 @@ function sendReply(message: IMessage, room: IRoom) {
   );
 
   if (!mentionIds || mentionIds.length === 0) {
-    return;
+    return message;
   }
 
   // check for all mentions
   for (const mentionId of mentionIds) {
     const foundDoc = OutOfOffice.getDocumentFromUserId(mentionId);
 
-    // do not proceed if the room is  mentioned
+    // do not proceed if user is already mentioned in main thread of the channel
     if (
       !foundDoc ||
       (foundDoc.mentionedRoomIds.includes(room._id) && !(message as any).tmid)
@@ -165,8 +165,6 @@ function sendReply(message: IMessage, room: IRoom) {
     // also notify the deputy (do not use mention in the message itself to avoid case when deputy has left the room before disabling)
     executeSendMessage("rocket.cat", myMessage);
   }
-
-  // aditya-todo: handle the corner case when multiple users are out of office and mentioned in the same message
 
   return message;
 }

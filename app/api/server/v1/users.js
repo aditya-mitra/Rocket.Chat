@@ -550,7 +550,6 @@ API.v1.addRoute('users.outOfOffice.disable',{authRequired:true},{
 
 API.v1.addRoute('users.outOfOffice.info',{authRequired:true},{
 	get(){
-		// aditya-todo: import checkIfUserIsOutOfOffice from 'app/lib/server/functions'
 		const flag = isUserOutOfOffice(this.userId);
 		return API.v1.success({isOutOfOffice:flag});
 	}
