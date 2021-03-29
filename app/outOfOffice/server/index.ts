@@ -52,7 +52,6 @@ Meteor.methods({
         [deputyUser._id],
         { fields: { rid: 1 } }
       ).fetch();
-      console.log("the sub was", sub);
 
       if (Array.isArray(sub) && sub.length > 0 && sub[0].rid === room._id) {
         // the user was already present in the room. do not remove him
@@ -72,17 +71,13 @@ Meteor.methods({
       addUserToRoom(room._id, deputyUser, currentUser, false);
     }
 
-    console.log(
-      "the already present rooms were -- enabled --",
-      alreadyPresentRoomIds
-    );
-
     OutOfOffice.createUserOutOfOffice({
       userId: this.userId,
       deputyId: deputyUser._id,
       roomIds,
       customMessage,
       alreadyPresentRoomIds,
+      mentionedRoomIds: [],
     });
   },
   disableUserOutOfOffice() {
@@ -101,8 +96,6 @@ Meteor.methods({
     const currentUser: IUser = Users.findOneById(this.userId);
     const defaultBot: IUser = Users.findOneById("rocket.cat");
     const deputyUser: IUser = Users.findOneById(deputyId);
-
-    console.log("the already present rooms were", alreadyPresentRoomIds);
 
     for (const roomId of roomIds) {
       const room: IRoom = Rooms.findOneById(roomId);
@@ -142,10 +135,15 @@ function sendReply(message: IMessage, room: IRoom) {
     return;
   }
 
+  // check for all mentions
   for (const mentionId of mentionIds) {
-    const foundDoc = OutOfOffice.getDeputyAndCustomMessage(mentionId);
+    const foundDoc = OutOfOffice.getDocumentFromUserId(mentionId);
 
-    if (!foundDoc) {
+    // do not proceed if the room is  mentioned
+    if (
+      !foundDoc ||
+      (foundDoc.mentionedRoomIds.includes(room._id) && !(message as any).tmid)
+    ) {
       continue;
     }
 
@@ -158,6 +156,12 @@ function sendReply(message: IMessage, room: IRoom) {
       rid: room._id,
       tmid: (message as any).tmid,
     };
+
+    // push the room id where the mentioned ocurred if not a thread
+    if (!(message as any).tmid) {
+      OutOfOffice.updateMentionedRooms(foundDoc._id, room._id);
+    }
+
     // also notify the deputy (do not use mention in the message itself to avoid case when deputy has left the room before disabling)
     executeSendMessage("rocket.cat", myMessage);
   }

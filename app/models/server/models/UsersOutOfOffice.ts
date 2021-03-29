@@ -11,10 +11,6 @@ class UsersOutOfOffice extends Base {
     this.tryEnsureIndex({ userId: 1 }, { unique: true });
     this.tryEnsureIndex({ deputyId: 1 });
     this.tryEnsureIndex({ roomIds: 1 });
-    // store user's custom message. also check that the user did not do a mention in his custom message
-    // store user's custom message
-    // store if deputy was already added in the room
-    // store if user was already mentioned in the main channel
   }
 
   // create
@@ -25,6 +21,7 @@ class UsersOutOfOffice extends Base {
     roomIds,
     customMessage,
     alreadyPresentRoomIds,
+    mentionedRoomIds = [],
   }: Omit<IOutOfOfficeModel, "_id">) {
     const data = {
       userId,
@@ -32,6 +29,7 @@ class UsersOutOfOffice extends Base {
       roomIds,
       customMessage,
       alreadyPresentRoomIds,
+      mentionedRoomIds,
     };
 
     return this.insert(data);
@@ -46,20 +44,6 @@ class UsersOutOfOffice extends Base {
   getOutOfOfficeRooms(userId: string): string[] {
     const doc = this.findOne({ userId }, { fields: { roomIds: 1 } });
     return doc && doc.roomIds ? doc.roomIds : [];
-  }
-
-  getOutOfOfficeRoomsAndDeputy(
-    userId: string
-  ): { roomIds: string[]; deputyId: string } {
-    const doc = this.findOne(
-      { userId },
-      { fields: { roomIds: 1, deputyId: 1 } }
-    );
-
-    return {
-      roomIds: doc.roomIds,
-      deputyId: doc.deputyId,
-    };
   }
 
   getDeputyAndCustomMessage(
@@ -90,6 +74,13 @@ class UsersOutOfOffice extends Base {
     );
   }
 
+  updateMentionedRooms(docId: string, mentionedRoomId: string) {
+    return this.update(
+      { _id: docId },
+      { $push: { mentionedRoomIds: mentionedRoomId } }
+    );
+  }
+
   // destroy
 
   removeUserOutOfOffice(userId: string) {
@@ -105,6 +96,7 @@ interface IOutOfOfficeModel {
   roomIds: string[];
   customMessage: string;
   alreadyPresentRoomIds: string[];
+  mentionedRoomIds: string[];
 }
 
 export default new UsersOutOfOffice();
