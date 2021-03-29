@@ -7,6 +7,7 @@ class UsersOutOfOffice extends Base {
     // aditya-todo change the model to contain:
     //  username, name, and _id of the oof user
     //  username, name and _id of the deputy
+    //  BUT these are subject to change like renaming
     // no need to ensure the index of all, just store the type in the interface IOutOfOfficeModel
     this.tryEnsureIndex({ userId: 1 }, { unique: true });
     this.tryEnsureIndex({ deputyId: 1 });

@@ -26,6 +26,7 @@ import { resetUserE2EEncriptionKey } from '../../../../server/lib/resetUserE2EKe
 import { setUserStatus } from '../../../../imports/users-presence/server/activeUsers';
 import { resetTOTP } from '../../../2fa/server/functions/resetTOTP';
 import { Team } from '../../../../server/sdk';
+import {isUserOutOfOffice} from '../../../outOfOffice/server/lib'
 
 API.v1.addRoute('users.create', { authRequired: true }, {
 	post() {
@@ -547,11 +548,11 @@ API.v1.addRoute('users.outOfOffice.disable',{authRequired:true},{
 	}
 })
 
-API.v1.addRoute('users.outOfOffice.check',{authRequired:true},{
+API.v1.addRoute('users.outOfOffice.info',{authRequired:true},{
 	get(){
 		// aditya-todo: import checkIfUserIsOutOfOffice from 'app/lib/server/functions'
-		const flag = checkIfUserIsOutOfOffice(this.userId);
-		return API.v1.success({outOfOffice:flag})
+		const flag = isUserOutOfOffice(this.userId);
+		return API.v1.success({isOutOfOffice:flag});
 	}
 })
 

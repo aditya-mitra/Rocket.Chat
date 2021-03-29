@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Accordion,
   Box,
@@ -12,6 +12,7 @@ import {
 import { useTranslation } from "../../../contexts/TranslationContext";
 import { useEndpointAction } from "../../../hooks/useEndpointAction";
 import { UserAutoComplete } from "../../../components/AutoComplete";
+import { useEndpointData } from "/client/hooks/useEndpointData";
 
 function PreferencesOutOfOffice({ ...props }) {
   const t = useTranslation() as any;
@@ -23,6 +24,7 @@ function PreferencesOutOfOffice({ ...props }) {
     setCustomMessage,
   ] = useState(`Sorry, I am currently Out of Office! 
 Can you please redirect your messages to my assigning deputy. Thank you`);
+  const [oofEnabled, setOofEnabled] = useState(false);
 
   const handleAddRooms = (e: any) => setRooms(e?.currentTarget.value);
 
@@ -50,11 +52,22 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
 
   const enableOutOfOffice = useCallback(async () => {
     await enableEndpoint();
+    setOofEnabled(true);
   }, [enableEndpoint]);
 
   const disableOutOfOffice = useCallback(async () => {
     await disableEndpoint();
+    setOofEnabled(false);
   }, [disableEndpoint]);
+
+  const {
+    value: { isOutOfOffice = false } = { isOutOfOffice: false },
+  } = useEndpointData("users.outOfOffice.info" as any);
+
+  useEffect(() => {
+    console.log('is it enabled?',isOutOfOffice);
+    setOofEnabled(isOutOfOffice);
+  }, [isOutOfOffice, setOofEnabled]);
 
   return (
     // change the buttons to toggle switches so that useForm can be used
@@ -93,7 +106,9 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
           >
             <Field.Label>{t("Enable Out Of Office")}</Field.Label>
             <Field.Row>
-              <Button onClick={enableOutOfOffice}>Enable</Button>
+              <Button onClick={enableOutOfOffice} disabled={oofEnabled}>
+                Enable
+              </Button>
             </Field.Row>
           </Box>
           <Field.Hint>
@@ -109,7 +124,9 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
           >
             <Field.Label>{t("Disable Out Of Office")}</Field.Label>
             <Field.Row>
-              <Button onClick={disableOutOfOffice}>Disable</Button>
+              <Button onClick={disableOutOfOffice} disabled={!oofEnabled}>
+                Disable
+              </Button>
             </Field.Row>
           </Box>
           <Field.Hint>
