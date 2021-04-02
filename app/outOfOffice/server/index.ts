@@ -1,6 +1,7 @@
 import { Meteor } from "meteor/meteor";
 
 import { Users, Rooms, Subscriptions, OutOfOffice } from "../../models/server";
+import type { IOutOfOfficeModel } from "../../models/server/models/UsersOutOfOffice";
 import { executeSendMessage } from "../../lib/server/methods/sendMessage";
 import { addUserToRoom } from "../../lib/server/functions/addUserToRoom";
 import { removeUserFromRoom } from "../../lib/server/functions/removeUserFromRoom";
@@ -28,7 +29,6 @@ Meteor.methods({
     }
 
     const currentUser: IUser = Users.findOneById(this.userId);
-    const defaultBot: IUser = Users.findOneById("rocket.cat");
     const deputyUser: IUser = Users.findOneByUsername(deputyUsername);
 
     if (currentUser._id === deputyUser._id) {
@@ -41,7 +41,7 @@ Meteor.methods({
       );
     }
 
-    const alreadyPresentRoomIds: string[] = [];
+    const deputyPresentRoomIds: string[] = [];
 
     for (const roomId of roomIds) {
       const room: IRoom = Rooms.findOneById(roomId);
@@ -55,19 +55,14 @@ Meteor.methods({
 
       if (Array.isArray(sub) && sub.length > 0 && sub[0].rid === room._id) {
         // the user was already present in the room. do not remove him
-        alreadyPresentRoomIds.push(room._id);
+        deputyPresentRoomIds.push(room._id);
       }
 
       if (!room) {
         continue;
       }
 
-      const outOfficeEnabledMessage = {
-        msg: `User @${currentUser.username} is **out of office**. @${deputyUser.username} will be added as the assigning deputy for this user to this channel.`,
-        rid: room._id,
-      };
-
-      executeSendMessage(defaultBot._id, outOfficeEnabledMessage);
+      // executeSendMessage(defaultBot._id, outOfficeEnabledMessage);
       addUserToRoom(room._id, deputyUser, currentUser, false);
     }
 
@@ -76,8 +71,9 @@ Meteor.methods({
       deputyId: deputyUser._id,
       roomIds,
       customMessage,
-      alreadyPresentRoomIds,
-      mentionedRoomIds: [],
+      deputyPresentRoomIds,
+      mentionedUserIds: [],
+      sentRoomIds: [],
     });
   },
   disableUserOutOfOffice() {
@@ -90,7 +86,7 @@ Meteor.methods({
     const {
       roomIds,
       deputyId,
-      alreadyPresentRoomIds,
+      deputyPresentRoomIds,
     } = OutOfOffice.getDocumentFromUserId(this.userId);
 
     const currentUser: IUser = Users.findOneById(this.userId);
@@ -113,7 +109,7 @@ Meteor.methods({
       executeSendMessage(defaultBot._id, myMessage);
 
       // remove the deputy from that room
-      if (!alreadyPresentRoomIds.includes(room._id)) {
+      if (!deputyPresentRoomIds.includes(room._id)) {
         removeUserFromRoom(room._id, deputyUser, { byUser: currentUser });
       }
     }
@@ -122,56 +118,9 @@ Meteor.methods({
   },
 });
 
-function sendReply(message: IMessage, room: IRoom) {
-  // get the mention from the message
-
-  const {
-    mentionIds,
-  }: { mentionIds: string[]; toHere: boolean; toAll: boolean } = getMentions(
-    message as any
-  );
-
-  if (!mentionIds || mentionIds.length === 0) {
-    return message;
-  }
-
-  // check for all mentions
-  for (const mentionId of mentionIds) {
-    const foundDoc = OutOfOffice.getDocumentFromUserId(mentionId);
-
-    // do not proceed if user is already mentioned in main thread of the channel
-    if (
-      !foundDoc ||
-      (foundDoc.mentionedRoomIds.includes(room._id) && !(message as any).tmid)
-    ) {
-      continue;
-    }
-
-    const { customMessage } = foundDoc;
-
-    const myMessage = {
-      // send the custom message only if it is thread
-      // else send the proper information message with the deputy name
-      msg: customMessage,
-      rid: room._id,
-      tmid: (message as any).tmid,
-    };
-
-    // push the room id where the mentioned ocurred if not a thread
-    if (!(message as any).tmid) {
-      OutOfOffice.updateMentionedRooms(foundDoc._id, room._id);
-    }
-
-    // also notify the deputy (do not use mention in the message itself to avoid case when deputy has left the room before disabling)
-    executeSendMessage("rocket.cat", myMessage);
-  }
-
-  return message;
-}
-
 callbacks.add(
   "afterSaveMessage",
-  sendReply,
+  sendReplyForOutOfOffice,
   callbacks.priority.LOW,
   "listen-for-oof"
 );
@@ -181,3 +130,73 @@ interface IEnableOptionProps {
   deputyUsername: string;
   customMessage: string;
 }
+
+function sendReplyForOutOfOffice(message: IMessage, room: IRoom) {
+  const {
+    mentionIds,
+  }: { mentionIds: string[]; toHere: boolean; toAll: boolean } = getMentions(
+    message as any
+  );
+
+  // notify the mentioning user if any
+  if (mentionIds && mentionIds.length > 0) {
+    sendMessageToMentioners(mentionIds, message, room);
+    return message;
+  }
+
+  const docs = OutOfOffice.getDocsFromRoomId(room._id);
+
+  for (const doc of docs) {
+    console.log("the doc was", doc);
+    if (!doc.sentRoomIds.includes(room._id)) {
+      OutOfOffice.updateSentRoomIds(doc._id, room._id);
+      sendUserCustomMessageToChannel(doc, message, room);
+    }
+  }
+
+  return message;
+}
+
+function sendMessageToMentioners(
+  mentionIds: string[],
+  message: IMessage,
+  room: IRoom
+) {
+  // check for all mentions
+  for (const mentionId of mentionIds) {
+    const foundDoc = OutOfOffice.getDocumentFromUserId(mentionId);
+
+    console.log("the doc was", foundDoc);
+    if (foundDoc.mentionedUserIds.includes(message.u._id)) {
+      continue; // do not sent a message if the mentioner is already aware
+    }
+
+    sendUserCustomMessageToChannel(foundDoc, message, room);
+
+    // store the user who mentioned
+    OutOfOffice.updateMentionedUserIds(foundDoc._id, message.u._id);
+  }
+}
+
+function sendUserCustomMessageToChannel(
+  doc: IOutOfOfficeModel,
+  message: IMessage,
+  room: IRoom
+) {
+  // send the message to room if not already present
+  const myMessage = {
+    msg: doc.customMessage,
+    rid: room._id,
+    tmid: (message as any).tmid,
+  };
+  executeSendMessage(doc.userId, myMessage);
+}
+
+/*hello,
+I am trying to draft a proposal for Out of Office but I am very unclear with the implementation
+The problem is:
+Out of Office functionality can be integrated into the main codebase without any (or almost minimum) modifications in the existing code. 
+It can be built as a Rocket.Chat app. But this (second approach) will require modifications in the codebase of apps-engine. Currently, the apps-engine does not include features like sending the message as the user itself (and not a bot) and scheduling (like from when till when Out of Office will be enabled).
+The mentors are bit busy and when I asked them they do not have much knowledge of RC apps. All they said was they want to ship the feature as soon as possible.
+Can you please provide me your suggestions because I have asked the mentors (both in dm and ama)? 
+*/

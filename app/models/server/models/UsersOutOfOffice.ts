@@ -21,16 +21,18 @@ class UsersOutOfOffice extends Base {
     deputyId,
     roomIds,
     customMessage,
-    alreadyPresentRoomIds,
-    mentionedRoomIds = [],
+    deputyPresentRoomIds,
+    mentionedUserIds = [],
+    sentRoomIds = [],
   }: Omit<IOutOfOfficeModel, "_id">) {
     const data = {
       userId,
       deputyId,
       roomIds,
       customMessage,
-      alreadyPresentRoomIds,
-      mentionedRoomIds,
+      deputyPresentRoomIds,
+      mentionedUserIds,
+      sentRoomIds,
     };
 
     return this.insert(data);
@@ -56,6 +58,11 @@ class UsersOutOfOffice extends Base {
     );
   }
 
+  getDocsFromRoomId(roomId: string): IOutOfOfficeModel[] {
+    // can be refactored into an aggregation
+    return this.find({ roomIds: { $elemMatch: { $eq: roomId } } });
+  }
+
   // update
 
   updateUserOutOfOffice(
@@ -75,11 +82,18 @@ class UsersOutOfOffice extends Base {
     );
   }
 
-  updateMentionedRooms(docId: string, mentionedRoomId: string) {
+  updateMentionedUserIds(
+    docId: IOutOfOfficeModel["_id"],
+    mentioningUserId: string
+  ) {
     return this.update(
       { _id: docId },
-      { $push: { mentionedRoomIds: mentionedRoomId } }
+      { $push: { mentionedUserIds: mentioningUserId } }
     );
+  }
+
+  updateSentRoomIds(docId: IOutOfOfficeModel["_id"], roomId: string) {
+    return this.update({ _id: docId }, { $push: { sentRoomIds: roomId } });
   }
 
   // destroy
@@ -90,14 +104,15 @@ class UsersOutOfOffice extends Base {
   }
 }
 
-interface IOutOfOfficeModel {
+export interface IOutOfOfficeModel {
   _id: string;
   userId: string;
   deputyId: string;
   roomIds: string[];
   customMessage: string;
-  alreadyPresentRoomIds: string[];
-  mentionedRoomIds: string[];
+  deputyPresentRoomIds: string[];
+  mentionedUserIds: string[];
+  sentRoomIds: string[];
 }
 
 export default new UsersOutOfOffice();

@@ -112,7 +112,7 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
             </Field.Row>
           </Box>
           <Field.Hint>
-            {t("Will send a message telling that you are now out of office")}
+            {t("You will be Out of Office with your message being sent to the selected channels")}
           </Field.Hint>
         </Field>
         <Field>
@@ -130,7 +130,7 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
             </Field.Row>
           </Box>
           <Field.Hint>
-            {t("Will remove the deputy from the channels")}
+            {t("You will be in Office and take command from your Deputy")}
           </Field.Hint>
         </Field>
         <Field>
@@ -144,7 +144,7 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
           </Field.Row>
           <Field.Hint>
             {t(
-              "A message that will be sent to the channel when you are being mentioned"
+              "A message which will be auto sent while you have enabled Out of Office"
             )}
           </Field.Hint>
         </Field>
