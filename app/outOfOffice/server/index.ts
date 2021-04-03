@@ -192,11 +192,4 @@ function sendUserCustomMessageToChannel(
   executeSendMessage(doc.userId, myMessage);
 }
 
-/*hello,
-I am trying to draft a proposal for Out of Office but I am very unclear with the implementation
-The problem is:
-Out of Office functionality can be integrated into the main codebase without any (or almost minimum) modifications in the existing code. 
-It can be built as a Rocket.Chat app. But this (second approach) will require modifications in the codebase of apps-engine. Currently, the apps-engine does not include features like sending the message as the user itself (and not a bot) and scheduling (like from when till when Out of Office will be enabled).
-The mentors are bit busy and when I asked them they do not have much knowledge of RC apps. All they said was they want to ship the feature as soon as possible.
-Can you please provide me your suggestions because I have asked the mentors (both in dm and ama)? 
-*/
+// https://github.com/wreiske/Rocket.Chat.App-Tenor
