@@ -102,6 +102,10 @@ class UsersOutOfOffice extends Base {
     const doc = this.findOne({ userId });
     return this.remove(doc._id);
   }
+
+  removeAllDocuments() {
+    return this.remove({});
+  }
 }
 
 export interface IOutOfOfficeModel {

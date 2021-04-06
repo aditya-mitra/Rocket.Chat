@@ -15,6 +15,7 @@ import { IMessage } from "../../../definition/IMessage";
 // const kameUserId = "JMXwCKiQ9v28Hf7Ef";
 // const camelRidersRoomId = "mPcbxJxRzzjwdCF7f";
 // const deputyUserId = "8hWHiTdK7yTEsXCxo";
+// const gothamCityRoomId = "nbdMeQ4TiQXYNFaGk";
 
 Meteor.methods({
   enableUserOutOfOffice({
@@ -66,7 +67,7 @@ Meteor.methods({
       addUserToRoom(room._id, deputyUser, currentUser, false);
     }
 
-    OutOfOffice.createUserOutOfOffice({
+    const a = OutOfOffice.createUserOutOfOffice({
       userId: this.userId,
       deputyId: deputyUser._id,
       roomIds,
@@ -75,6 +76,8 @@ Meteor.methods({
       mentionedUserIds: [],
       sentRoomIds: [],
     });
+
+    console.log("the document created was", a);
   },
   disableUserOutOfOffice() {
     if (!this.userId) {
@@ -90,7 +93,6 @@ Meteor.methods({
     } = OutOfOffice.getDocumentFromUserId(this.userId);
 
     const currentUser: IUser = Users.findOneById(this.userId);
-    const defaultBot: IUser = Users.findOneById("rocket.cat");
     const deputyUser: IUser = Users.findOneById(deputyId);
 
     for (const roomId of roomIds) {
@@ -99,15 +101,6 @@ Meteor.methods({
       if (!room) {
         continue;
       }
-
-      const myMessage = {
-        msg: `User @${currentUser.username} is **back in office**.`,
-        rid: room._id,
-      };
-
-      // send message to show that the deputy left the channel because outOfOffice was disabled
-      executeSendMessage(defaultBot._id, myMessage);
-
       // remove the deputy from that room
       if (!deputyPresentRoomIds.includes(room._id)) {
         removeUserFromRoom(room._id, deputyUser, { byUser: currentUser });
@@ -167,7 +160,7 @@ function sendMessageToMentioners(
     const foundDoc = OutOfOffice.getDocumentFromUserId(mentionId);
 
     console.log("the doc was", foundDoc);
-    if (foundDoc.mentionedUserIds.includes(message.u._id)) {
+    if (!foundDoc || foundDoc.mentionedUserIds.includes(message.u._id)) {
       continue; // do not sent a message if the mentioner is already aware
     }
 
@@ -188,8 +181,18 @@ function sendUserCustomMessageToChannel(
     msg: doc.customMessage,
     rid: room._id,
     tmid: (message as any).tmid,
+    alias: 'Out of Office',
   };
   executeSendMessage(doc.userId, myMessage);
 }
+
+// clear the out of office database on server restart
+Meteor.startup(() => {
+  OutOfOffice.removeAllDocuments();
+  console.log(
+    "the out of office collection contains = ",
+    OutOfOffice.find()?.count?.()
+  );
+});
 
 // https://github.com/wreiske/Rocket.Chat.App-Tenor
