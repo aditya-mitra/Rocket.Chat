@@ -5,28 +5,42 @@ import {
   Button,
   Field,
   FieldGroup,
-  TextInput,
   TextAreaInput,
+  /**@ts-ignore */
+  MultiSelect,
 } from "@rocket.chat/fuselage";
 
 import { useTranslation } from "../../../contexts/TranslationContext";
 import { useEndpointAction } from "../../../hooks/useEndpointAction";
+import { useEndpointData } from "../../../hooks/useEndpointData";
 import { UserAutoComplete } from "../../../components/AutoComplete";
-import { useEndpointData } from "/client/hooks/useEndpointData";
+import { ISubscription } from "../../../../definition/ISubscription";
 
 function PreferencesOutOfOffice({ ...props }) {
   const t = useTranslation() as any;
 
-  const [rooms, setRooms] = useState("");
-  const [deputy, setDeputy] = useState(""); // contains the usernames
+  const [rooms, setRooms] = useState<string[]>([]);
+  const [deputy, setDeputy] = useState(""); // contains the username
   const [
     customMessage,
     setCustomMessage,
   ] = useState(`Sorry, I am currently Out of Office! 
 Can you please redirect your messages to my assigning deputy. Thank you`);
-  const [oofEnabled, setOofEnabled] = useState(false);
+  const [OOOEnabled, setOOOEnabled] = useState(false);
 
-  const handleAddRooms = (e: any) => setRooms(e?.currentTarget.value);
+  const handleAddRooms = (roomIds: string[]) => {
+    setRooms([...roomIds]);
+  };
+
+  const {
+    value: { update: subscribedRooms = [] } = { update: [] },
+  }: IEndpointSubscriptionsGet = useEndpointData("subscriptions.get" as any);
+
+  const roomOptions: Array<[string, string]> = useMemo(() => {
+    return subscribedRooms
+      .filter((s) => s.t !== "d")
+      .map((s) => [s.rid, s.name]);
+  }, [subscribedRooms]);
 
   const enableEndpoint = useEndpointAction(
     "POST",
@@ -34,7 +48,7 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
     useMemo(
       () => ({
         enable: true,
-        roomIds: rooms.split(","),
+        roomIds: rooms,
         deputyUsername: deputy,
         customMessage,
       }),
@@ -52,12 +66,12 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
 
   const enableOutOfOffice = useCallback(async () => {
     await enableEndpoint();
-    setOofEnabled(true);
+    setOOOEnabled(true);
   }, [enableEndpoint]);
 
   const disableOutOfOffice = useCallback(async () => {
     await disableEndpoint();
-    setOofEnabled(false);
+    setOOOEnabled(false);
   }, [disableEndpoint]);
 
   const {
@@ -65,9 +79,8 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
   } = useEndpointData("users.outOfOffice.info" as any);
 
   useEffect(() => {
-    console.log('is it enabled?',isOutOfOffice);
-    setOofEnabled(isOutOfOffice);
-  }, [isOutOfOffice, setOofEnabled]);
+    setOOOEnabled(isOutOfOffice);
+  }, [isOutOfOffice, setOOOEnabled]);
 
   return (
     // change the buttons to toggle switches so that useForm can be used
@@ -78,10 +91,12 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
             {t("Select the Channels for Out of Office")}
           </Field.Label>
           <Field.Row>
-            <TextInput
-              onChange={handleAddRooms}
-              value={rooms}
+            <MultiSelect
               placeholder={"channels to be selected"}
+              options={roomOptions}
+              onChange={handleAddRooms}
+              maxWidth="100%"
+              flexGrow={1}
             />
           </Field.Row>
         </Field>
@@ -93,7 +108,7 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
             // @ts-ignore */
               value={deputy}
               onChange={setDeputy}
-              placeholder={"select the users"}
+              placeholder={"select the user"}
             />
           </Field.Row>
         </Field>
@@ -106,13 +121,15 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
           >
             <Field.Label>{t("Enable Out Of Office")}</Field.Label>
             <Field.Row>
-              <Button onClick={enableOutOfOffice} disabled={oofEnabled}>
+              <Button onClick={enableOutOfOffice} disabled={OOOEnabled}>
                 Enable
               </Button>
             </Field.Row>
           </Box>
           <Field.Hint>
-            {t("You will be Out of Office with your message being sent to the selected channels")}
+            {t(
+              "You will be Out of Office with your message being sent to the selected channels"
+            )}
           </Field.Hint>
         </Field>
         <Field>
@@ -124,7 +141,7 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
           >
             <Field.Label>{t("Disable Out Of Office")}</Field.Label>
             <Field.Row>
-              <Button onClick={disableOutOfOffice} disabled={!oofEnabled}>
+              <Button onClick={disableOutOfOffice} disabled={!OOOEnabled}>
                 Disable
               </Button>
             </Field.Row>
@@ -153,4 +170,12 @@ Can you please redirect your messages to my assigning deputy. Thank you`);
   );
 }
 
+interface IEndpointSubscriptionsGet {
+  value?: { update: Array<ISubscription> };
+}
+
 export default PreferencesOutOfOffice;
+
+/**
+ * api.broadcast('notify.ephemeralMessage',user._id,room._id,{msg:'reaction ephemeral message'})
+ */
