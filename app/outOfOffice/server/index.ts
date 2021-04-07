@@ -140,7 +140,6 @@ function sendReplyForOutOfOffice(message: IMessage, room: IRoom) {
   const docs = OutOfOffice.getDocsFromRoomId(room._id);
 
   for (const doc of docs) {
-    console.log("the doc was", doc);
     if (!doc.sentRoomIds.includes(room._id)) {
       OutOfOffice.updateSentRoomIds(doc._id, room._id);
       sendUserCustomMessageToChannel(doc, message, room);
@@ -166,6 +165,25 @@ function sendMessageToMentioners(
 
     sendUserCustomMessageToChannel(foundDoc, message, room);
 
+    /*
+    ONLY YOU CAN SEE THIS MESSAGE not working
+    (the sender is always rocket.cat)
+
+    const myMessage = {
+      msg: foundDoc.customMessage,
+      rid: room._id,
+      tmid: (message as any).tmid,
+      alias: "Out of Office",
+    };
+
+    api.broadcast(
+      "notify.ephemeralMessage",
+      message.u._id,
+      room._id,
+      myMessage
+    );
+    */
+
     // store the user who mentioned
     OutOfOffice.updateMentionedUserIds(foundDoc._id, message.u._id);
   }
@@ -173,15 +191,14 @@ function sendMessageToMentioners(
 
 function sendUserCustomMessageToChannel(
   doc: IOutOfOfficeModel,
-  message: IMessage,
+  _message: IMessage,
   room: IRoom
 ) {
   // send the message to room if not already present
   const myMessage = {
     msg: doc.customMessage,
     rid: room._id,
-    tmid: (message as any).tmid,
-    alias: 'Out of Office',
+    alias: "Out of Office",
   };
   executeSendMessage(doc.userId, myMessage);
 }
