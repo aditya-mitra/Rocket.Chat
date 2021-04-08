@@ -13,7 +13,7 @@ import {
 import { useTranslation } from "../../../contexts/TranslationContext";
 import { useEndpointAction } from "../../../hooks/useEndpointAction";
 import { useEndpointData } from "../../../hooks/useEndpointData";
-import { UserAutoComplete } from "../../../components/AutoComplete";
+import UserAutoComplete from "../../../components/UserAutoComplete";
 import { ISubscription } from "../../../../definition/ISubscription";
 
 function PreferencesOutOfOffice({ ...props }) {

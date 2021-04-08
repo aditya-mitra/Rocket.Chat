@@ -14,6 +14,7 @@ import PreferencesMyDataSection from './PreferencesMyDataSection';
 import PreferencesNotificationsSection from './PreferencesNotificationsSection';
 import PreferencesSoundSection from './PreferencesSoundSection';
 import PreferencesUserPresenceSection from './PreferencesUserPresenceSection';
+import PreferencesOutOfOffice from './PreferencesOutOfOffice';
 
 const AccountPreferencesPage = () => {
 	const t = useTranslation();
@@ -98,6 +99,7 @@ const AccountPreferencesPage = () => {
 						<PreferencesNotificationsSection commitRef={commitRef} onChange={onChange} />
 						<PreferencesMessagesSection commitRef={commitRef} onChange={onChange} />
 						<PreferencesHighlightsSection commitRef={commitRef} onChange={onChange} />
+						<PreferencesOutOfOffice />
 						<PreferencesSoundSection commitRef={commitRef} onChange={onChange} />
 						{dataDownloadEnabled && <PreferencesMyDataSection onChange={onChange} />}
 					</Accordion>
