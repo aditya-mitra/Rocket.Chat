@@ -78,6 +78,11 @@ Meteor.methods({
     });
 
     console.log("the document created was", a);
+
+    /*const when = new Date();
+    when.setMinutes(when.getMinutes() + 1);
+
+    (Promise as any).await(scheduler.runAfterT(when, a));*/
   },
   disableUserOutOfOffice() {
     if (!this.userId) {
