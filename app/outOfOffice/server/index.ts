@@ -79,6 +79,8 @@ Meteor.methods({
 
     console.log("the document created was", a);
 
+    // schedule enableDate
+
     /*const when = new Date();
     when.setMinutes(when.getMinutes() + 1);
 
@@ -127,6 +129,8 @@ interface IEnableOptionProps {
   roomIds: string[];
   deputyUsername: string;
   customMessage: string;
+  enableDate: Date;
+  disableDate: Date;
 }
 
 function sendReplyForOutOfOffice(message: IMessage, room: IRoom) {
@@ -168,7 +172,7 @@ function sendMessageToMentioners(
       continue; // do not sent a message if the mentioner is already aware
     }
 
-    sendUserCustomMessageToChannel(foundDoc, message, room);
+    sendMentionReply(foundDoc, message, room);
 
     /*
     ONLY YOU CAN SEE THIS MESSAGE not working
@@ -194,6 +198,23 @@ function sendMessageToMentioners(
   }
 }
 
+function sendMentionReply(
+  doc: IOutOfOfficeModel,
+  message: IMessage,
+  room: IRoom
+) {
+  const user: IUser = Users.findOneById(doc.userId);
+  const deputy: IUser = Users.findOneById(doc.deputyId);
+  const mentionReplyMessage = {
+    msg: `The mentioned user _(${user.name})_ is Out of Office.
+Please redirect your messages to *${deputy.name}* who is present in the channel.`,
+    alias: "Out of Office",
+    rid: room._id,
+    tmid: (message as any).tmid,
+  };
+  executeSendMessage(user._id, mentionReplyMessage);
+}
+
 function sendUserCustomMessageToChannel(
   doc: IOutOfOfficeModel,
   _message: IMessage,
@@ -203,7 +224,6 @@ function sendUserCustomMessageToChannel(
   const myMessage = {
     msg: doc.customMessage,
     rid: room._id,
-    alias: "Out of Office",
   };
   executeSendMessage(doc.userId, myMessage);
 }
@@ -216,5 +236,3 @@ Meteor.startup(() => {
     OutOfOffice.find()?.count?.()
   );
 });
-
-// https://github.com/wreiske/Rocket.Chat.App-Tenor

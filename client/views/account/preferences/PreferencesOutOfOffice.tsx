@@ -26,6 +26,7 @@ function PreferencesOutOfOffice({ ...props }) {
 	const [customMessage, setCustomMessage] = useState(`I will be out of office this week.
 If you need immediate assistance, while please contact`);
 	const [OOOEnabled, setOOOEnabled] = useState(false);
+	const [firstDateDisabled, setFirstDateDisabled] = useState(true);
 	const [lastDateDisabled, setLastDateDisabled] = useState(true);
 
 	const handleAddRooms = (roomIds: string[]) => {
@@ -146,17 +147,24 @@ If you need immediate assistance, while please contact`);
 					</Field.Hint>
 				</Field>
 				<Field>
-					<Field.Label>{t('First Day')}</Field.Label>
+					<Box display='flex' flexDirection='row' justifyContent='spaceBetween' flexGrow={1}>
+						<Field.Label>{t('First Day')}</Field.Label>
+						<ToggleSwitch
+							checked={!firstDateDisabled}
+							onChange={() => setFirstDateDisabled((prev) => !prev)}
+						/>
+					</Box>
 					<Field.Row>
 						<InputBox
 							type='date'
+							disabled={firstDateDisabled}
 							// value={dateTime?.date}
 							// onChange={handleDateTime?.date}
 							flexGrow={1}
 							h='x20'
 						/>
 					</Field.Row>
-					<Field.Hint>{t('The date when Out of Office will be enabled. Defaults to now.')}</Field.Hint>
+					<Field.Hint>{t('The date when Out of Office will be enabled.')}</Field.Hint>
 				</Field>
 				<Field>
 					<Box display='flex' flexDirection='row' justifyContent='spaceBetween' flexGrow={1}>

@@ -96,10 +96,10 @@ const AccountPreferencesPage = () => {
 						/>
 						<PreferencesGlobalSection commitRef={commitRef} onChange={onChange} />
 						<PreferencesUserPresenceSection commitRef={commitRef} onChange={onChange} />
+						<PreferencesOutOfOffice />
 						<PreferencesNotificationsSection commitRef={commitRef} onChange={onChange} />
 						<PreferencesMessagesSection commitRef={commitRef} onChange={onChange} />
 						<PreferencesHighlightsSection commitRef={commitRef} onChange={onChange} />
-						<PreferencesOutOfOffice />
 						<PreferencesSoundSection commitRef={commitRef} onChange={onChange} />
 						{dataDownloadEnabled && <PreferencesMyDataSection onChange={onChange} />}
 					</Accordion>
