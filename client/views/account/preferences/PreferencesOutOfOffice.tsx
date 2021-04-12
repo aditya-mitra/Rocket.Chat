@@ -23,8 +23,8 @@ function PreferencesOutOfOffice({ ...props }) {
 
 	const [rooms, setRooms] = useState<string[]>([]);
 	const [deputy, setDeputy] = useState(''); // contains the username
-	const [customMessage, setCustomMessage] = useState(`I will be out of office this week.
-If you need immediate assistance, while please contact`);
+	const [customMessage, setCustomMessage] = useState(`Hello everyone.
+I am currently Out of Office`);
 	const [OOOEnabled, setOOOEnabled] = useState(false);
 	const [firstDateDisabled, setFirstDateDisabled] = useState(true);
 	const [lastDateDisabled, setLastDateDisabled] = useState(true);

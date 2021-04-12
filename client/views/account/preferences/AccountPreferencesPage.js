@@ -89,14 +89,13 @@ const AccountPreferencesPage = () => {
 			<Page.ScrollableContentWithShadow>
 				<Box maxWidth='x600' w='full' alignSelf='center'>
 					<Accordion>
+						<PreferencesOutOfOffice />
 						<PreferencesLocalizationSection
 							commitRef={commitRef}
 							onChange={onChange}
-							defaultExpanded
 						/>
 						<PreferencesGlobalSection commitRef={commitRef} onChange={onChange} />
 						<PreferencesUserPresenceSection commitRef={commitRef} onChange={onChange} />
-						<PreferencesOutOfOffice />
 						<PreferencesNotificationsSection commitRef={commitRef} onChange={onChange} />
 						<PreferencesMessagesSection commitRef={commitRef} onChange={onChange} />
 						<PreferencesHighlightsSection commitRef={commitRef} onChange={onChange} />

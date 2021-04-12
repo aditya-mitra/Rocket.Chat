@@ -207,7 +207,7 @@ function sendMentionReply(
   const deputy: IUser = Users.findOneById(doc.deputyId);
   const mentionReplyMessage = {
     msg: `The mentioned user _(${user.name})_ is Out of Office.
-Please redirect your messages to *${deputy.name}* who is present in the channel.`,
+Please redirect your messages to @${deputy.username} who is present in the channel.`,
     alias: "Out of Office",
     rid: room._id,
     tmid: (message as any).tmid,
