@@ -274,7 +274,7 @@
 		"tar-stream": "^1.6.2",
 		"tinykeys": "^1.1.0",
 		"toastr": "^2.1.4",
-		"turndown": "^5.0.3",
+		"turndown": "^7.0.0",
 		"twilio": "^3.48.2",
 		"twit": "^2.2.11",
 		"ua-parser-js": "^0.7.21",
