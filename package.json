@@ -275,7 +275,7 @@
 		"tinykeys": "^1.1.0",
 		"toastr": "^2.1.4",
 		"turndown": "^5.0.3",
-		"twilio": "^3.48.2",
+		"twilio": "^3.64.0",
 		"twit": "^2.2.11",
 		"ua-parser-js": "^0.7.21",
 		"underscore": "^1.10.2",
