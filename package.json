@@ -104,7 +104,7 @@
 		"husky": "^1.2.0",
 		"i18next": "^17.3.1",
 		"jsdom-global": "3.0.2",
-		"less-loader": "^5.0.0",
+		"less-loader": "^6.2.0",
 		"md5": "^2.3.0",
 		"mocha": "^8.1.1",
 		"mock-require": "^3.0.3",
