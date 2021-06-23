@@ -178,7 +178,7 @@
 		"bcrypt": "^5.0.0",
 		"blockstack": "19.3.0",
 		"body-parser": "1.18.3",
-		"bson": "^4.1.0",
+		"bson": "^4.4.0",
 		"bugsnag": "^2.4.3",
 		"bunyan": "^1.8.14",
 		"busboy": "^0.2.14",
