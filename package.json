@@ -186,7 +186,7 @@
 		"cas": "https://github.com/kcbanner/node-cas/tarball/fcd27dad333223b3b75a048bce27973fb3ca0f62",
 		"change-case": "^4.1.1",
 		"chart.js": "^2.9.3",
-		"clipboard": "^2.0.6",
+		"clipboard": "^2.0.8",
 		"codemirror": "^5.56.0",
 		"coffeescript": "^2.5.1",
 		"connect": "^3.7.0",
