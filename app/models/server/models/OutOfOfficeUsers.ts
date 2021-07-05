@@ -3,6 +3,9 @@ import { Base } from './_Base';
 class OutOfOfficeUsers extends Base {
 	constructor() {
 		super('OutOfOfficeUsers');
+
+		this.tryEnsureIndex({ userId: 1 });
+		this.tryEnsureIndex({ userId: 1, isEnabled: 1 }, { unique: true });
 	}
 
 	// insert
