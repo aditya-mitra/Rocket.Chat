@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 
-import { OutOfOfficeUser } from '../../models/server';
+import { OutOfOfficeUsers } from '../../models/server';
 
 interface IUpdateOutOfOfficeParams {
 	userId: string;
@@ -24,7 +24,7 @@ export function updateOutOfOffice({
 	isEnabled,
 }: IUpdateOutOfOfficeParams): IUpdateOutOfOffice {
 	if (!isEnabled) {
-		const affected = OutOfOfficeUser.setDisabled(userId);
+		const affected = OutOfOfficeUsers.setDisabled(userId);
 		if (affected === 0) {
 			// this will if the user had not enabled out-of-office before
 			throw new Meteor.Error(
@@ -50,7 +50,7 @@ export function updateOutOfOffice({
 		throw new Meteor.Error('error-invalid-date', 'Your Start data has to be before the End Date');
 	}
 
-	const upsertResult = OutOfOfficeUser.createWithFullOutOfOfficeData({
+	const upsertResult = OutOfOfficeUsers.createWithFullOutOfOfficeData({
 		userId,
 		startDate,
 		endDate,
