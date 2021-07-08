@@ -2,7 +2,7 @@ import { check, Match } from 'meteor/check';
 
 import { API } from '../api';
 import { updateOutOfOffice } from '../../../out-of-office/server';
-import { OutOfOfficeUsers } from '../../../models/server';
+import { OutOfOfficeUsers, OutOfOfficeRooms } from '../../../models/server';
 
 API.v1.addRoute(
 	'outOfOffice.toggle',
@@ -36,7 +36,7 @@ API.v1.addRoute(
 	{
 		get() {
 			const foundDocument = OutOfOfficeUsers.findOneByUserId(this.userId, {
-				fields: { 
+				fields: {
 					isEnabled: 1,
 					roomIds: 1,
 					customMessage: 1,
@@ -71,21 +71,22 @@ API.v1.addRoute('outOfOffice.getAll', {
 	},
 });
 
-API.v1.addRoute('outOfOffice.getById', {
-	get() {
-		const { docId } = this.bodyParams;
-		if (!docId) {
-			return API.v1.failure('doc id not provided');
-		}
-		const doc = OutOfOfficeUsers.findOneById(docId);
-
-		return API.v1.success({ 'the-found': doc });
-	},
-});
-
 API.v1.addRoute('outOfOffice.removeAll', {
 	get() {
 		OutOfOfficeUsers.remove({});
-		return API.v1.success({ result: 'deleted all documents' });
+		return API.v1.success({ result: 'deleted all user documents' });
+	},
+});
+
+API.v1.addRoute('outOfOffice.getAllRooms', {
+	get() {
+		return API.v1.success(OutOfOfficeRooms.find({}).fetch());
+	},
+});
+
+API.v1.addRoute('outOfOffice.removeAllRooms', {
+	get() {
+		OutOfOfficeRooms.remove({});
+		return API.v1.success({ result: 'deleted all room documents' });
 	},
 });

@@ -9,7 +9,7 @@ class OutOfOfficeUsers extends Base {
 	createWithFullOutOfOfficeData(
 		data: Omit<IOutOfOfficeUser, '_id'>,
 	): Record<string, unknown> {
-		return this.upsert({ userId: data.userId }, { ...data });
+		return this.upsert({ userId: data.userId }, { $set: data });
 	}
 
 	// find
@@ -17,15 +17,15 @@ class OutOfOfficeUsers extends Base {
 		return this.findOne({ userId }, options);
 	}
 
-	findAllFromRoomId(roomId:string):IOutOfOfficeUser[]{
-		return this.find({roomIds:{$in:[roomId]},sentRoomIds:{$nin:[roomId]}});
+	findAllFromRoomId(roomId: string): IOutOfOfficeUser[] {
+		return this.find({ roomIds: { $in: [roomId] }, sentRoomIds: { $nin: [roomId] } });
 	}
 
 	// update
 
-	updateSentRoomIds(docId: IOutOfOfficeUser["_id"], roomId: string) {
+	updateSentRoomIds(docId: IOutOfOfficeUser['_id'], roomId: string):void {
 		return this.update({ _id: docId }, { $push: { sentRoomIds: roomId } });
-	  }
+	}
 
 	setDisabled(userId: string): number {
 		return this.update({ userId }, { $set: { isEnabled: false } });

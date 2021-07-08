@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 
-import { OutOfOfficeUsers } from '../../models/server';
+import { OutOfOfficeUsers, OutOfOfficeRooms } from '../../models/server';
 
 interface IUpdateOutOfOfficeParams {
 	userId: string;
@@ -13,6 +13,22 @@ interface IUpdateOutOfOfficeParams {
 
 interface IUpdateOutOfOffice {
 	message: string;
+}
+
+async function addUserAndRoomToCollection(
+	userId: string,
+	roomIds: string[],
+): Promise<void> {
+	await Promise.all(
+		roomIds.map(async (roomId) => {
+			return OutOfOfficeRooms.addUserIdAndRoomId({ userId, roomId });
+		}),
+	).catch((e) => {
+		console.log(
+			'Error while adding user and room to OutOfOfficeRooms collection',
+			e,
+		);
+	});
 }
 
 export function updateOutOfOffice({
@@ -43,11 +59,17 @@ export function updateOutOfOffice({
 	}
 
 	if (isNaN(Date.parse(startDate)) || isNaN(Date.parse(endDate))) {
-		throw new Meteor.Error('error-invalid-date', 'The "startDate" and "endDate" must be  valid dates.');
+		throw new Meteor.Error(
+			'error-invalid-date',
+			'The "startDate" and "endDate" must be  valid dates.',
+		);
 	}
 
 	if (startDate && endDate && startDate > endDate) {
-		throw new Meteor.Error('error-invalid-date', 'Your Start data has to be before the End Date');
+		throw new Meteor.Error(
+			'error-invalid-date',
+			'Your Start data has to be before the End Date',
+		);
 	}
 
 	const upsertResult = OutOfOfficeUsers.createWithFullOutOfOfficeData({
@@ -62,6 +84,8 @@ export function updateOutOfOffice({
 	if (!upsertResult || upsertResult.numberAffected !== 1) {
 		throw new Meteor.Error('error-database-error');
 	}
+
+	addUserAndRoomToCollection(userId, roomIds);
 
 	return { message: 'Successfully Enabled Out Of Office' };
 }
