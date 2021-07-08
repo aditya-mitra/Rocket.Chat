@@ -38,7 +38,6 @@ export interface IOutOfOffice {
 	userId: string;
 	roomIds: string[];
 	customMessage: string;
-	sentRoomIds: string[];
 	startDate: string;
 	endDate: string;
 }

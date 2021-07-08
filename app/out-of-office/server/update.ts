@@ -49,7 +49,6 @@ export function updateOutOfOffice({
 		customMessage,
 		isEnabled,
 		roomIds,
-		sentRoomIds: [],
 	});
 
 	if (!upsertResult || upsertResult.numberAffected !== 1) {

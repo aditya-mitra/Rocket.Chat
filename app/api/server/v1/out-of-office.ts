@@ -47,9 +47,12 @@ API.v1.addRoute(
 	{
 		get() {
 			const foundDocument = OutOfOffice.findOneByUserId(this.userId, {
-				isEnabled: 1,
+				fields: {isEnabled: 1,
 				roomIds: 1,
 				customMessage: 1,
+				startDate:1,
+				endDate:1
+				}
 			});
 
 			// need to subtract the offset here
