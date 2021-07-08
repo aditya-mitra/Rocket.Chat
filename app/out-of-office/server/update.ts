@@ -20,9 +20,7 @@ async function addUserAndRoomToCollection(
 	roomIds: string[],
 ): Promise<void> {
 	await Promise.all(
-		roomIds.map(async (roomId) => {
-			return OutOfOfficeRooms.addUserIdAndRoomId({ userId, roomId });
-		}),
+		roomIds.map(async (roomId) => OutOfOfficeRooms.addUserIdAndRoomId({ userId, roomId })),
 	).catch((e) => {
 		console.log(
 			'Error while adding user and room to OutOfOfficeRooms collection',

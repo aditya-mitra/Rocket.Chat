@@ -20,8 +20,8 @@ class OutOfOfficeRooms extends Base {
 	}
 
 	// remove
-	removeById(_id:string){
-		return this.remove({_id});
+	removeById(_id: string): Record<string, unknown> {
+		return this.remove({ _id });
 	}
 }
 
