@@ -42,6 +42,14 @@ export function updateOutOfOffice({
 		);
 	}
 
+	if (isNaN(Date.parse(startDate)) || isNaN(Date.parse(endDate))) {
+		throw new Meteor.Error('error-invalid-date', 'The "startDate" and "endDate" must be  valid dates.');
+	}
+
+	if (startDate && endDate && startDate > endDate) {
+		throw new Meteor.Error('error-invalid-date', 'Your Start data has to be before the End Date');
+	}
+
 	const upsertResult = OutOfOfficeUser.createWithFullOutOfOfficeData({
 		userId,
 		startDate,
