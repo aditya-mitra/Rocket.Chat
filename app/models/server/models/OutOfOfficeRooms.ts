@@ -5,6 +5,7 @@ class OutOfOfficeRooms extends Base {
 		super('OutOfOfficeRooms');
 	}
 
+	// insert
 	addUserIdAndRoomId({
 		roomId,
 		userId,
@@ -16,6 +17,11 @@ class OutOfOfficeRooms extends Base {
 			{ roomId },
 			{ $set: { roomId }, $addToSet: { userIds: userId } },
 		);
+	}
+
+	// remove
+	removeById(_id:string){
+		return this.remove({_id});
 	}
 }
 

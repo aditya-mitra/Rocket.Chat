@@ -17,6 +17,10 @@ class OutOfOfficeUsers extends Base {
 		return this.findOne({ userId }, options);
 	}
 
+	findEnabledByUserIds(userIds:string[]):Pick<IOutOfOfficeUser,'_id'|'customMessage'|'userId'>[]{
+		return this.find({userId:{$in:userIds},isEnabled:true},{fields:{customMessage:1,userId:1}}).fetch();
+	}
+
 	findAllFromRoomId(roomId: string): IOutOfOfficeUser[] {
 		return this.find({ roomIds: { $in: [roomId] }, sentRoomIds: { $nin: [roomId] } });
 	}
