@@ -3,7 +3,7 @@ import { check, Match } from 'meteor/check';
 
 import { API } from '../api';
 import { updateOutOfOffice } from '../../../out-of-office/server';
-import { OutOfOffice } from '../../../models/server';
+import { OutOfOfficeUser } from '../../../models/server';
 
 API.v1.addRoute(
 	'outOfOffice.toggle',
@@ -46,13 +46,13 @@ API.v1.addRoute(
 	{ authRequired: true },
 	{
 		get() {
-			const foundDocument = OutOfOffice.findOneByUserId(this.userId, {
-				fields: {isEnabled: 1,
-				roomIds: 1,
-				customMessage: 1,
-				startDate:1,
-				endDate:1
-				}
+			const foundDocument = OutOfOfficeUser.findOneByUserId(this.userId, {
+				fields: { isEnabled: 1,
+					roomIds: 1,
+					customMessage: 1,
+					startDate: 1,
+					endDate: 1,
+				},
 			});
 
 			// need to subtract the offset here
@@ -73,7 +73,7 @@ API.v1.addRoute(
 
 API.v1.addRoute('outOfOffice.getAll', {
 	get() {
-		const allDocuments = OutOfOffice.find({}).fetch();
+		const allDocuments = OutOfOfficeUser.find({}).fetch();
 
 		return API.v1.success({
 			'all-docs': allDocuments,
@@ -87,7 +87,7 @@ API.v1.addRoute('outOfOffice.getById', {
 		if (!docId) {
 			return API.v1.failure('doc id not provided');
 		}
-		const doc = OutOfOffice.findOneById(docId);
+		const doc = OutOfOfficeUser.findOneById(docId);
 
 		return API.v1.success({ 'the-found': doc });
 	},
@@ -95,7 +95,7 @@ API.v1.addRoute('outOfOffice.getById', {
 
 API.v1.addRoute('outOfOffice.removeAll', {
 	get() {
-		OutOfOffice.remove({});
+		OutOfOfficeUser.remove({});
 		return API.v1.success({ result: 'deleted all documents' });
 	},
 });

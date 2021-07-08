@@ -1,29 +1,29 @@
 import { Base } from './_Base';
 
-class OutOfOffice extends Base {
+class OutOfOfficeUsers extends Base {
 	constructor() {
-		super('OutOfOffice');
+		super('OutOfOfficeUsers');
 	}
 
 	// insert
 	createWithFullOutOfOfficeData(
-		data: Omit<IOutOfOffice, '_id'>,
+		data: Omit<IOutOfOfficeUser, '_id'>,
 	): Record<string, unknown> {
 		return this.upsert({ userId: data.userId }, { ...data });
 	}
 
 	// find
-	findOneByUserId(userId: IOutOfOffice['userId'], options = {}): IOutOfOffice {
+	findOneByUserId(userId: IOutOfOfficeUser['userId'], options = {}): IOutOfOfficeUser {
 		return this.findOne({ userId }, options);
 	}
 
-	findAllFromRoomId(roomId:string):IOutOfOffice[]{
+	findAllFromRoomId(roomId:string):IOutOfOfficeUser[]{
 		return this.find({roomIds:{$in:[roomId]},sentRoomIds:{$nin:[roomId]}});
 	}
 
 	// update
 
-	updateSentRoomIds(docId: IOutOfOffice["_id"], roomId: string) {
+	updateSentRoomIds(docId: IOutOfOfficeUser["_id"], roomId: string) {
 		return this.update({ _id: docId }, { $push: { sentRoomIds: roomId } });
 	  }
 
@@ -32,7 +32,7 @@ class OutOfOffice extends Base {
 	}
 }
 
-export interface IOutOfOffice {
+export interface IOutOfOfficeUser {
 	_id: string;
 	isEnabled: boolean;
 	userId: string;
@@ -42,4 +42,4 @@ export interface IOutOfOffice {
 	endDate: string;
 }
 
-export default new OutOfOffice();
+export default new OutOfOfficeUsers();
