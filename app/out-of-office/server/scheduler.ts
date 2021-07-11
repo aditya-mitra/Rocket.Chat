@@ -1,98 +1,99 @@
-import { Meteor } from "meteor/meteor";
-import Agenda from "agenda";
-import { MongoInternals } from "meteor/mongo";
+import { Meteor } from 'meteor/meteor';
+import Agenda from 'agenda';
+import { MongoInternals } from 'meteor/mongo';
 
-import { OutOfOfficeUsers } from "../../models/server";
+import { OutOfOfficeUsers } from '../../models/server';
 
 interface IScheduleDisable {
-  userId: string;
-  when: string;
+	userId: string;
+	when: string;
 }
 
-const Disable_OutOfOfficeUser_Job = "disableOutOfOfficeUser";
+const DisableOutOfOfficeUserJob = 'disableOutOfOfficeUser';
 
 class OutOfOfficeScheduler {
-  private isConnected: boolean;
-  private scheduler: Agenda;
+	private isConnected: boolean;
 
-  constructor() {
-    this.scheduler = new Agenda({
-      mongo: (
-        MongoInternals.defaultRemoteCollectionDriver().mongo as any
-      ).client.db(),
-      db: { collection: "outofoffice_scheduler" },
-      defaultConcurrency: 1,
-    });
-    this.isConnected = false;
-  }
+	private scheduler: Agenda;
 
-  private async startScheduler(): Promise<void> {
-    if (!this.isConnected) {
-      await this.scheduler.start();
-      this.isConnected = true;
-    }
-    this.registerJobs();
-  }
+	constructor() {
+		this.scheduler = new Agenda({
+			mongo: (
+				MongoInternals.defaultRemoteCollectionDriver().mongo as any
+			).client.db(),
+			db: { collection: 'outofoffice_scheduler' },
+			defaultConcurrency: 1,
+		});
+		this.isConnected = false;
+	}
 
-  private async registerJobs(): Promise<void> {
-    this.scheduler.define(
-      Disable_OutOfOfficeUser_Job,
-      async ({ attrs: { _id, data } }: Agenda.Job) => {
-        const { userId } = data;
-        await this.scheduler.cancel({ _id });
-        OutOfOfficeUsers.setDisabled(userId);
-      }
-    );
-  }
+	private async startScheduler(): Promise<void> {
+		if (!this.isConnected) {
+			await this.scheduler.start();
+			this.isConnected = true;
+		}
+		this.registerJobs();
+	}
 
-  public async startup(): Promise<void> {
-    await this.startScheduler();
-    await this.registerJobs();
-  }
+	private async registerJobs(): Promise<void> {
+		this.scheduler.define(
+			DisableOutOfOfficeUserJob,
+			async ({ attrs: { _id, data } }: Agenda.Job) => {
+				const { userId } = data;
+				await this.scheduler.cancel({ _id });
+				OutOfOfficeUsers.setDisabled(userId);
+			},
+		);
+	}
 
-  public async scheduleDisable({
-    when,
-    userId,
-  }: IScheduleDisable): Promise<void> {
-    // const when = new Date(when);
-    await this.startScheduler();
-    const scheduledJobs = await this.scheduler.jobs({
-      name: Disable_OutOfOfficeUser_Job,
-      data: { userId },
-    });
-    if (scheduledJobs.length > 0) {
-      await this.scheduler.cancel({ _id: scheduledJobs[0].attrs._id }); // reschedule the job for the user
-    }
-    await this.scheduler.schedule(when, Disable_OutOfOfficeUser_Job, {
-      userId,
-    });
-  }
+	public async startup(): Promise<void> {
+		await this.startScheduler();
+		await this.registerJobs();
+	}
 
-  public async cancelScheduledDisableByUser(userId: string) {
-    await this.scheduler.cancel({
-      name: Disable_OutOfOfficeUser_Job,
-      data: { userId },
-    });
-  }
+	public async scheduleDisable({
+		when,
+		userId,
+	}: IScheduleDisable): Promise<void> {
+		// const when = new Date(when);
+		await this.startScheduler();
+		const scheduledJobs = await this.scheduler.jobs({
+			name: DisableOutOfOfficeUserJob,
+			data: { userId },
+		});
+		if (scheduledJobs.length > 0) {
+			await this.scheduler.cancel({ _id: scheduledJobs[0].attrs._id }); // reschedule the job for the user
+		}
+		await this.scheduler.schedule(when, DisableOutOfOfficeUserJob, {
+			userId,
+		});
+	}
 
-  // only for debugging - remove later
+	public async cancelScheduledDisableByUser(userId: string): Promise<void> {
+		await this.scheduler.cancel({
+			name: DisableOutOfOfficeUserJob,
+			data: { userId },
+		});
+	}
 
-  public async listAllJobs(): Promise<void> {
-    await this.startScheduler();
-    const jobs = await this.scheduler.jobs({ name: Disable_OutOfOfficeUser_Job });
-    console.log(
-      "the jobs in agenda are -->",
-      jobs.map((j) => j.attrs)
-    );
-  }
+	// only for debugging - remove later
 
-  public async cancel(): Promise<void> {
-    await this.scheduler.cancel({});
-  }
+	public async listAllJobs(): Promise<void> {
+		await this.startScheduler();
+		const jobs = await this.scheduler.jobs({ name: DisableOutOfOfficeUserJob });
+		console.log(
+			'the jobs in agenda are -->',
+			jobs.map((j) => j.attrs),
+		);
+	}
+
+	public async cancel(): Promise<void> {
+		await this.scheduler.cancel({});
+	}
 }
 
 export const outOfOfficeScheduler = new OutOfOfficeScheduler();
 
 Meteor.startup(() => {
-  outOfOfficeScheduler.startup();
+	outOfOfficeScheduler.startup();
 });

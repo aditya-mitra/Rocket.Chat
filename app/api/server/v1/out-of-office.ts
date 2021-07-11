@@ -3,7 +3,7 @@ import { check, Match } from 'meteor/check';
 import { API } from '../api';
 import { updateOutOfOffice } from '../../../out-of-office/server';
 import { OutOfOfficeUsers, OutOfOfficeRooms } from '../../../models/server';
-import {outOfOfficeScheduler} from '../../../out-of-office/server/scheduler'
+import { outOfOfficeScheduler } from '../../../out-of-office/server/scheduler';
 
 API.v1.addRoute(
 	'outOfOffice.toggle',
@@ -92,19 +92,19 @@ API.v1.addRoute('outOfOffice.removeAllRooms', {
 	},
 });
 
-API.v1.addRoute('outOfOffice.addJob',{
-	get(){
+API.v1.addRoute('outOfOffice.addJob', {
+	get() {
 		outOfOfficeScheduler.listAllJobs();
-		return API.v1.success({'get':true});
+		return API.v1.success({ get: true });
 	},
-	post(){
+	post() {
 		const when = new Date();
-		when.setMinutes(when.getMinutes()+1);
-		outOfOfficeScheduler.scheduleDisable({when:when.toISOString(),userId:this.bodyParams.userId})
-		return API.v1.success({'post':when.toISOString()})
+		when.setMinutes(when.getMinutes() + 1);
+		outOfOfficeScheduler.scheduleDisable({ when: when.toISOString(), userId: this.bodyParams.userId });
+		return API.v1.success({ post: when.toISOString() });
 	},
-	put(){
+	put() {
 		outOfOfficeScheduler.cancel();
-		return API.v1.success({'put':true});
-	}
-})
+		return API.v1.success({ put: true });
+	},
+});
