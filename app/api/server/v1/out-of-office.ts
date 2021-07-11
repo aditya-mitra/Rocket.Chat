@@ -3,6 +3,7 @@ import { check, Match } from 'meteor/check';
 import { API } from '../api';
 import { updateOutOfOffice } from '../../../out-of-office/server';
 import { OutOfOfficeUsers, OutOfOfficeRooms } from '../../../models/server';
+import {outOfOfficeScheduler} from '../../../out-of-office/server/scheduler'
 
 API.v1.addRoute(
 	'outOfOffice.toggle',
@@ -90,3 +91,20 @@ API.v1.addRoute('outOfOffice.removeAllRooms', {
 		return API.v1.success({ result: 'deleted all room documents' });
 	},
 });
+
+API.v1.addRoute('outOfOffice.addJob',{
+	get(){
+		outOfOfficeScheduler.listAllJobs();
+		return API.v1.success({'get':true});
+	},
+	post(){
+		const when = new Date();
+		when.setMinutes(when.getMinutes()+1);
+		outOfOfficeScheduler.scheduleDisable({date:when.toISOString(),userId:this.bodyParams.userId})
+		return API.v1.success({'post':when.toISOString()})
+	},
+	put(){
+		outOfOfficeScheduler.cancel();
+		return API.v1.success({'put':true});
+	}
+})
