@@ -6,7 +6,7 @@ import { OutOfOfficeUsers } from "../../models/server";
 
 interface IScheduleDisable {
   userId: string;
-  date: string;
+  when: string;
 }
 
 const Disable_OutOfOfficeUser_Job = "disableOutOfOfficeUser";
@@ -34,11 +34,10 @@ class OutOfOfficeScheduler {
     this.registerJobs();
   }
 
-  public async registerJobs(): Promise<void> {
+  private async registerJobs(): Promise<void> {
     this.scheduler.define(
       Disable_OutOfOfficeUser_Job,
       async ({ attrs: { _id, data } }: Agenda.Job) => {
-        console.log(" ooo job dispatched --> ", _id, " -- ", data);
         const { userId } = data;
         await this.scheduler.cancel({ _id });
         OutOfOfficeUsers.setDisabled(userId);
@@ -52,10 +51,10 @@ class OutOfOfficeScheduler {
   }
 
   public async scheduleDisable({
-    date,
+    when,
     userId,
   }: IScheduleDisable): Promise<void> {
-    // const when = new Date(date);
+    // const when = new Date(when);
     await this.startScheduler();
     const scheduledJobs = await this.scheduler.jobs({
       name: Disable_OutOfOfficeUser_Job,
@@ -64,16 +63,23 @@ class OutOfOfficeScheduler {
     if (scheduledJobs.length > 0) {
       await this.scheduler.cancel({ _id: scheduledJobs[0].attrs._id }); // reschedule the job for the user
     }
-    await this.scheduler.schedule(date, Disable_OutOfOfficeUser_Job, {
+    await this.scheduler.schedule(when, Disable_OutOfOfficeUser_Job, {
       userId,
     });
   }
 
-  // remove later
+  public async cancelScheduledDisableByUser(userId: string) {
+    await this.scheduler.cancel({
+      name: Disable_OutOfOfficeUser_Job,
+      data: { userId },
+    });
+  }
+
+  // only for debugging - remove later
 
   public async listAllJobs(): Promise<void> {
     await this.startScheduler();
-    const jobs = await this.scheduler.jobs({ name: "disableOutOfOfficeUser" });
+    const jobs = await this.scheduler.jobs({ name: Disable_OutOfOfficeUser_Job });
     console.log(
       "the jobs in agenda are -->",
       jobs.map((j) => j.attrs)

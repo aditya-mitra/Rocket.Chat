@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 
 import { OutOfOfficeUsers, OutOfOfficeRooms } from '../../models/server';
+import {outOfOfficeScheduler} from './scheduler'
 
 interface IUpdateOutOfOfficeParams {
 	userId: string;
@@ -46,6 +47,7 @@ export function updateOutOfOffice({
 				'Please enable out of office before disabling.',
 			);
 		}
+		outOfOfficeScheduler.cancelScheduledDisableByUser(userId);
 		return { message: 'Successfully Disabled Out Of Office.' };
 	}
 
@@ -84,6 +86,7 @@ export function updateOutOfOffice({
 	}
 
 	addUserAndRoomToCollection(userId, roomIds);
+	outOfOfficeScheduler.scheduleDisable({when:endDate,userId});
 
 	return { message: 'Successfully Enabled Out Of Office' };
 }

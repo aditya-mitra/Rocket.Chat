@@ -100,7 +100,7 @@ API.v1.addRoute('outOfOffice.addJob',{
 	post(){
 		const when = new Date();
 		when.setMinutes(when.getMinutes()+1);
-		outOfOfficeScheduler.scheduleDisable({date:when.toISOString(),userId:this.bodyParams.userId})
+		outOfOfficeScheduler.scheduleDisable({when:when.toISOString(),userId:this.bodyParams.userId})
 		return API.v1.success({'post':when.toISOString()})
 	},
 	put(){
