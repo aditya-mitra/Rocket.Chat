@@ -74,7 +74,7 @@
 		"@types/jsdom": "^16.2.12",
 		"@types/less": "^3.0.2",
 		"@types/mailparser": "^3.0.2",
-		"@types/marked": "^1.2.2",
+		"@types/marked": "^2.0.4",
 		"@types/meteor": "^1.4.71",
 		"@types/mkdirp": "^1.0.1",
 		"@types/mocha": "^8.2.2",
