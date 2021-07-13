@@ -87,8 +87,8 @@ API.v1.addRoute('outOfOffice.getAllRooms', {
 
 API.v1.addRoute('outOfOffice.removeAllRooms', {
 	get() {
-		OutOfOfficeRooms.remove({});
-		return API.v1.success({ result: 'deleted all room documents' });
+		const res = OutOfOfficeRooms.remove({});
+		return API.v1.success({ result: 'deleted all room documents = '+res });
 	},
 });
 
@@ -96,12 +96,6 @@ API.v1.addRoute('outOfOffice.addJob', {
 	get() {
 		outOfOfficeScheduler.listAllJobs();
 		return API.v1.success({ get: true });
-	},
-	post() {
-		const when = new Date();
-		when.setMinutes(when.getMinutes() + 1);
-		outOfOfficeScheduler.scheduleDisable({ when: when.toISOString(), userId: this.bodyParams.userId });
-		return API.v1.success({ post: when.toISOString() });
 	},
 	put() {
 		outOfOfficeScheduler.cancel();

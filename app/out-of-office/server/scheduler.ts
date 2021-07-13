@@ -2,7 +2,8 @@ import { Meteor } from 'meteor/meteor';
 import Agenda from 'agenda';
 import { MongoInternals } from 'meteor/mongo';
 
-import { OutOfOfficeUsers,OutOfOfficeRooms } from '../../models/server';
+import { OutOfOfficeUsers } from '../../models/server';
+import {addToOutOfOfficeRoomsCollection,removeUserIdInPresentRooms} from './lib'
 
 interface IScheduleEnable {
 	userId:string;
@@ -17,20 +18,6 @@ interface IScheduleDisable {
 
 const EnableOutOfOfficeUserJob = 'enableOutOfOfficeUser';
 const DisableOutOfOfficeUserJob = 'disableOutOfOfficeUser';
-
-async function addToOutOfOfficeRoomsCollection(
-	userId: string,
-	roomIds: string[],
-): Promise<void> {
-	await Promise.all(
-		roomIds.map(async (roomId) => OutOfOfficeRooms.addUserIdAndRoomId({ userId, roomId })),
-	).catch((e) => {
-		console.log(
-			'Error while adding user and room to OutOfOfficeRooms collection',
-			e,
-		);
-	});
-}
 
 class OutOfOfficeScheduler {
 	private isConnected: boolean;
@@ -53,14 +40,14 @@ class OutOfOfficeScheduler {
 			await this.scheduler.start();
 			this.isConnected = true;
 		}
-		this.registerJobs();
 	}
 
 	private async registerJobs(): Promise<void> {
 		this.scheduler.define(
 			EnableOutOfOfficeUserJob,
-			async ({ attrs: { data } }: Agenda.Job) => {
+			async ({ attrs: { _id,data } }: Agenda.Job) => {
 				const { userId, roomIds } = data;
+				await this.scheduler.cancel({ _id });
 				await addToOutOfOfficeRoomsCollection(userId,roomIds);
 			},
 		)
@@ -88,6 +75,9 @@ class OutOfOfficeScheduler {
 		if (scheduledJobs.length > 0) {
 			await this.scheduler.cancel({ _id: scheduledJobs[0].attrs._id }); // reschedule the job for the user
 		}
+		// if the user has rescheduled the startDate, remove this userId in OutOfOfficeRooms
+		await removeUserIdInPresentRooms(userId);
+
 		await this.scheduler.schedule(when,EnableOutOfOfficeUserJob,{userId,roomIds})
 	}
 

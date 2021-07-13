@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 
 import { OutOfOfficeUsers } from '../../models/server';
 import { outOfOfficeScheduler } from './scheduler';
+import {removeUserIdInPresentRooms} from './lib'
 
 interface IUpdateOutOfOfficeParams {
 	userId: string;
@@ -27,12 +28,14 @@ export function updateOutOfOffice({
 	if (!isEnabled) {
 		const affected = OutOfOfficeUsers.setDisabled(userId);
 		if (affected === 0) {
-			// this will if the user had not enabled out-of-office before
+			// this will happen if the user had not enabled out-of-office before
 			throw new Meteor.Error(
 				'error-invalid-user',
 				'Please enable out of office before disabling.',
 			);
 		}
+
+		removeUserIdInPresentRooms(userId);
 		outOfOfficeScheduler.cancelScheduledByUser(userId);
 		return { message: 'Successfully Disabled Out Of Office.' };
 	}
@@ -47,16 +50,19 @@ export function updateOutOfOffice({
 	if (isNaN(Date.parse(startDate)) || isNaN(Date.parse(endDate))) {
 		throw new Meteor.Error(
 			'error-invalid-date',
-			'The "startDate" and "endDate" must be  valid dates.',
+			'The "startDate" and "endDate" must be valid dates.',
 		);
 	}
 
 	if (startDate && endDate && startDate > endDate) {
 		throw new Meteor.Error(
 			'error-invalid-date',
-			'Your Start data has to be before the End Date',
+			'Your Start data has to be before the End Date.',
 		);
 	}
+	
+	outOfOfficeScheduler.scheduleEnable({when:startDate,userId,roomIds});
+	outOfOfficeScheduler.scheduleDisable({ when: endDate, userId });
 
 	const upsertResult = OutOfOfficeUsers.createWithFullOutOfOfficeData({
 		userId,
@@ -71,8 +77,5 @@ export function updateOutOfOffice({
 		throw new Meteor.Error('error-database-error');
 	}
 
-	outOfOfficeScheduler.scheduleEnable({when:startDate,userId,roomIds});
-	outOfOfficeScheduler.scheduleDisable({ when: endDate, userId });
-
-	return { message: 'Successfully Enabled Out Of Office' };
+	return { message: 'Successfully Enabled Out Of Office.' };
 }
