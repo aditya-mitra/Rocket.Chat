@@ -3,12 +3,12 @@ import Agenda from 'agenda';
 import { MongoInternals } from 'meteor/mongo';
 
 import { OutOfOfficeUsers } from '../../models/server';
-import {addToOutOfOfficeRoomsCollection,removeUserIdInPresentRooms} from './lib'
+import { addToOutOfOfficeRoomsCollection, removeUserIdInPresentRooms } from './lib';
 
 interface IScheduleEnable {
-	userId:string;
-	when:string;
-	roomIds:string[];
+	userId: string;
+	when: string;
+	roomIds: string[];
 }
 
 interface IScheduleDisable {
@@ -45,12 +45,12 @@ class OutOfOfficeScheduler {
 	private async registerJobs(): Promise<void> {
 		this.scheduler.define(
 			EnableOutOfOfficeUserJob,
-			async ({ attrs: { _id,data } }: Agenda.Job) => {
+			async ({ attrs: { _id, data } }: Agenda.Job) => {
 				const { userId, roomIds } = data;
 				await this.scheduler.cancel({ _id });
-				await addToOutOfOfficeRoomsCollection(userId,roomIds);
+				await addToOutOfOfficeRoomsCollection(userId, roomIds);
 			},
-		)
+		);
 		this.scheduler.define(
 			DisableOutOfOfficeUserJob,
 			async ({ attrs: { _id, data } }: Agenda.Job) => {
@@ -66,7 +66,7 @@ class OutOfOfficeScheduler {
 		await this.registerJobs();
 	}
 
-	public async scheduleEnable({when,userId,roomIds}:IScheduleEnable):Promise<void>{
+	public async scheduleEnable({ when, userId, roomIds }: IScheduleEnable): Promise<void> {
 		await this.startScheduler();
 		const scheduledJobs = await this.scheduler.jobs({
 			name: EnableOutOfOfficeUserJob,
@@ -78,7 +78,7 @@ class OutOfOfficeScheduler {
 		// if the user has rescheduled the startDate, remove this userId in OutOfOfficeRooms
 		await removeUserIdInPresentRooms(userId);
 
-		await this.scheduler.schedule(when,EnableOutOfOfficeUserJob,{userId,roomIds})
+		await this.scheduler.schedule(when, EnableOutOfOfficeUserJob, { userId, roomIds });
 	}
 
 	public async scheduleDisable({
@@ -101,9 +101,9 @@ class OutOfOfficeScheduler {
 
 	public async cancelScheduledByUser(userId: string): Promise<void> {
 		await this.scheduler.cancel({
-			name:EnableOutOfOfficeUserJob,
-			data:{userId}
-		})
+			name: EnableOutOfOfficeUserJob,
+			data: { userId },
+		});
 		await this.scheduler.cancel({
 			name: DisableOutOfOfficeUserJob,
 			data: { userId },

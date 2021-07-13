@@ -1,4 +1,4 @@
 export {
-  addToOutOfOfficeRoomsCollection,
-  removeUserIdInPresentRooms,
-} from "./outOfOfficeUtils";
+	addToOutOfOfficeRoomsCollection,
+	removeUserIdInPresentRooms,
+} from './outOfOfficeUtils';

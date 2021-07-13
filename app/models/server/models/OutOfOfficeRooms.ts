@@ -20,9 +20,9 @@ class OutOfOfficeRooms extends Base {
 	}
 
 	// update
-	/**update all the documents by removing the userId from the `userIds` array */
-	updateAllHavingUserId(userId:string,roomIds:string[],){
-		return this.update({roomId:{$in:roomIds}},{$pull:{userIds:userId}},{multi:true})
+	/** update all the documents by removing the userId from the `userIds` array */
+	updateAllHavingUserId(userId: string, roomIds: string[]): Record<string, unknown> {
+		return this.update({ roomId: { $in: roomIds } }, { $pull: { userIds: userId } }, { multi: true });
 	}
 
 	// remove

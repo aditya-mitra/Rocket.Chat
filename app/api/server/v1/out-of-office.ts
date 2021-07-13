@@ -88,7 +88,7 @@ API.v1.addRoute('outOfOffice.getAllRooms', {
 API.v1.addRoute('outOfOffice.removeAllRooms', {
 	get() {
 		const res = OutOfOfficeRooms.remove({});
-		return API.v1.success({ result: 'deleted all room documents = '+res });
+		return API.v1.success({ result: `deleted all room documents = ${ res }` });
 	},
 });
 

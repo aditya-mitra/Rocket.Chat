@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 
 import { OutOfOfficeUsers } from '../../models/server';
 import { outOfOfficeScheduler } from './scheduler';
-import {removeUserIdInPresentRooms} from './lib'
+import { removeUserIdInPresentRooms } from './lib';
 
 interface IUpdateOutOfOfficeParams {
 	userId: string;
@@ -60,8 +60,8 @@ export function updateOutOfOffice({
 			'Your Start data has to be before the End Date.',
 		);
 	}
-	
-	outOfOfficeScheduler.scheduleEnable({when:startDate,userId,roomIds});
+
+	outOfOfficeScheduler.scheduleEnable({ when: startDate, userId, roomIds });
 	outOfOfficeScheduler.scheduleDisable({ when: endDate, userId });
 
 	const upsertResult = OutOfOfficeUsers.createWithFullOutOfOfficeData({
