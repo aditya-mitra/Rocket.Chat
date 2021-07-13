@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 
-import { OutOfOfficeUsers, OutOfOfficeRooms } from '../../models/server';
+import { OutOfOfficeUsers } from '../../models/server';
 import { outOfOfficeScheduler } from './scheduler';
 
 interface IUpdateOutOfOfficeParams {
@@ -14,20 +14,6 @@ interface IUpdateOutOfOfficeParams {
 
 interface IUpdateOutOfOffice {
 	message: string;
-}
-
-async function addUserAndRoomToCollection(
-	userId: string,
-	roomIds: string[],
-): Promise<void> {
-	await Promise.all(
-		roomIds.map(async (roomId) => OutOfOfficeRooms.addUserIdAndRoomId({ userId, roomId })),
-	).catch((e) => {
-		console.log(
-			'Error while adding user and room to OutOfOfficeRooms collection',
-			e,
-		);
-	});
 }
 
 export function updateOutOfOffice({
@@ -47,7 +33,7 @@ export function updateOutOfOffice({
 				'Please enable out of office before disabling.',
 			);
 		}
-		outOfOfficeScheduler.cancelScheduledDisableByUser(userId);
+		outOfOfficeScheduler.cancelScheduledByUser(userId);
 		return { message: 'Successfully Disabled Out Of Office.' };
 	}
 
@@ -85,7 +71,7 @@ export function updateOutOfOffice({
 		throw new Meteor.Error('error-database-error');
 	}
 
-	addUserAndRoomToCollection(userId, roomIds);
+	outOfOfficeScheduler.scheduleEnable({when:startDate,userId,roomIds});
 	outOfOfficeScheduler.scheduleDisable({ when: endDate, userId });
 
 	return { message: 'Successfully Enabled Out Of Office' };
