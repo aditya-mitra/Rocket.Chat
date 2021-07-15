@@ -53,19 +53,19 @@ export async function updateOutOfOffice({
 			'The "startDate" and "endDate" must be valid dates.',
 		);
 	}
-	
+
 	if (startDate > endDate) {
 		throw new Meteor.Error(
 			'error-invalid-date',
 			'Your Start Date has to be before the End Date.',
 		);
 	}
-		
+
 	const currentDate = new Date().toISOString();
-	if(endDate < currentDate){
-		throw new Meteor.Error('error-invalid-date','The "startDate" and "endDate" must be after the current date')
-	} 
-	
+	if (endDate < currentDate) {
+		throw new Meteor.Error('error-invalid-date', 'The "startDate" and "endDate" must be after the current date');
+	}
+
 	await outOfOfficeScheduler.scheduleEnable({ when: startDate, userId, roomIds });
 	await outOfOfficeScheduler.scheduleDisable({ when: endDate, userId });
 

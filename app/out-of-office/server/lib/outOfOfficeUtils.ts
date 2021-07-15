@@ -20,7 +20,7 @@ export async function removeUserIdInPresentRooms(userId: string): Promise<void> 
 	const foundOutOfOfficeUser = OutOfOfficeUsers.findOneByUserId(userId, {
 		fields: { roomIds: 1 },
 	});
-	if(foundOutOfOfficeUser && foundOutOfOfficeUser.roomIds){
+	if (foundOutOfOfficeUser && foundOutOfOfficeUser.roomIds) {
 		OutOfOfficeRooms.updateAllHavingUserId(userId, foundOutOfOfficeUser.roomIds);
 	}
 }
