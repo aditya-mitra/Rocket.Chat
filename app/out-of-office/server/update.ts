@@ -17,14 +17,14 @@ interface IUpdateOutOfOffice {
 	message: string;
 }
 
-export function updateOutOfOffice({
+export async function updateOutOfOffice({
 	userId,
 	customMessage,
 	roomIds,
 	startDate,
 	endDate,
 	isEnabled,
-}: IUpdateOutOfOfficeParams): IUpdateOutOfOffice {
+}: IUpdateOutOfOfficeParams): Promise<IUpdateOutOfOffice> {
 	if (!isEnabled) {
 		const affected = OutOfOfficeUsers.setDisabled(userId);
 		if (affected === 0) {
@@ -54,20 +54,20 @@ export function updateOutOfOffice({
 		);
 	}
 	
-	const currentDate = new Date().toISOString();
-	if(startDate < currentDate || endDate < currentDate){
-		throw new Meteor.Error('error-invalid-date','The "startDate" and "endDate" must be after the current date')
-	}
-	
-	if (startDate && endDate && startDate > endDate) {
+	if (startDate > endDate) {
 		throw new Meteor.Error(
 			'error-invalid-date',
 			'Your Start Date has to be before the End Date.',
 		);
 	}
-
-	(Promise as any).await(outOfOfficeScheduler.scheduleEnable({ when: startDate, userId, roomIds }));
-	(Promise as any).await(outOfOfficeScheduler.scheduleDisable({ when: endDate, userId }));
+		
+	const currentDate = new Date().toISOString();
+	if(endDate < currentDate){
+		throw new Meteor.Error('error-invalid-date','The "startDate" and "endDate" must be after the current date')
+	} 
+	
+	await outOfOfficeScheduler.scheduleEnable({ when: startDate, userId, roomIds });
+	await outOfOfficeScheduler.scheduleDisable({ when: endDate, userId });
 
 	const upsertResult = OutOfOfficeUsers.createWithFullOutOfOfficeData({
 		userId,

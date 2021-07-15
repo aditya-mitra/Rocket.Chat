@@ -21,10 +21,10 @@ API.v1.addRoute(
 				}),
 			);
 
-			const { message } = updateOutOfOffice({
+			const { message } = (Promise as any).await(updateOutOfOffice({
 				userId: this.userId,
 				...this.bodyParams,
-			});
+			}));
 
 			return API.v1.success({ message });
 		},
