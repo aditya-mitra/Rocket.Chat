@@ -335,5 +335,96 @@ describe("[OutOfOffice]", function () {
 		});
 	});
 
-	describe("[/outOfOffice.status]", () => {});
+	describe("[/outOfOffice.status]", () => {
+		/**@type {User} */
+		let createdUser;
+		let createdUserCredentials;
+		const createdOutOfOfficeData = generateOutOfOfficeData({
+			customMessage:
+				"_Out of Office Message_ Testing *status endpoint* currently",
+		});
+
+		before(async () => {
+			createdUser = await createUser();
+			createdUserCredentials = await login(createdUser.username, password);
+		});
+
+		before(function (done) {
+			request
+				.post(api("outOfOffice.toggle"))
+				.set(createdUserCredentials)
+				.send(createdOutOfOfficeData)
+				.expect(200)
+				.end(done);
+		});
+
+		after(async () => {
+			await deleteUser(createdUser);
+		});
+
+		it("returns unauthorized if user is not authenticated", (done) => {
+			request.get(api("outOfOffice.status")).expect(401).end(done);
+		});
+
+		it("has the same data when user's out-of-office was enabled", (done) => {
+			request
+				.get(api("outOfOffice.status"))
+				.set(createdUserCredentials)
+				.expect(200)
+				.expect("Content-Type", "application/json")
+				.expect((res) => {
+					expect(res.body.success).to.be.true;
+					expect(res.body).to.include.keys(
+						"isEnabled",
+						"customMessage",
+						"roomIds",
+						"startDate",
+						"endDate"
+					);
+
+					expect(res.body.isEnabled).to.be.true;
+					expect(res.body.customMessage).to.eq(
+						createdOutOfOfficeData.customMessage
+					);
+					expect(res.body.roomIds).to.deep.eq(createdOutOfOfficeData.roomIds);
+					expect(res.body.startDate).to.eq(createdOutOfOfficeData.startDate);
+					expect(res.body.endDate).to.eq(createdOutOfOfficeData.endDate);
+				})
+				.end(done);
+		});
+
+		describe("out-of-office data for the user is updated", () => {
+			const newOutOfOfficeData = generateOutOfOfficeData({
+				customMessage: "an updated custom message",
+			});
+
+			before((done) => {
+				request
+					.post(api("outOfOffice.toggle"))
+					.set(createdUserCredentials)
+					.send(newOutOfOfficeData)
+					.expect(200)
+					.end(done);
+			});
+
+			it("has the updated out-of-office data", (done) => {
+				request
+					.get(api("outOfOffice.status"))
+					.set(createdUserCredentials)
+					.expect(200)
+					.expect("Content-Type", "application/json")
+					.expect((res) => {
+						expect(res.body.success).to.be.true;
+						expect(res.body.isEnabled).to.be.true;
+						expect(res.body.customMessage).to.eq(
+							newOutOfOfficeData.customMessage
+						);
+						expect(res.body.roomIds).to.deep.eq(newOutOfOfficeData.roomIds);
+						expect(res.body.startDate).to.eq(newOutOfOfficeData.startDate);
+						expect(res.body.endDate).to.eq(newOutOfOfficeData.endDate);
+					})
+					.end(done);
+			});
+		});
+	});
 });
