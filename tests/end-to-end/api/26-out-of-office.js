@@ -7,6 +7,18 @@ import {
 	credentials,
 } from "../../data/api-data.js";
 
+import { password } from "../../data/user";
+import { createUser, login, deleteUser } from "../../data/users.helper";
+
+const GENERAL_CHANNEL = "GENERAL";
+
+/**
+ * @typedef {Object} User
+ * @property {string} _id
+ * @property {string} username
+ * @property {string} name
+ */
+
 /**
  * @typedef {Object} OutOfOfficeData
  * @property {boolean} isEnabled
@@ -21,12 +33,13 @@ import {
  * @returns {OutOfOfficeData}
  */
 const generateOutOfOfficeData = (outOfOfficeData = {}) => {
-	const isEnabled = outOfOfficeData.isEnabled
-		? outOfOfficeData.isEnabled
-		: true;
+	const isEnabled =
+		typeof outOfOfficeData.isEnabled === "boolean"
+			? outOfOfficeData.isEnabled
+			: true;
 	const roomIds = outOfOfficeData.roomIds
 		? outOfOfficeData.roomIds
-		: ["GENERAL"];
+		: [GENERAL_CHANNEL];
 	const customMessage =
 		typeof outOfOfficeData.customMessage === "string"
 			? outOfOfficeData.customMessage
@@ -169,8 +182,156 @@ describe("[OutOfOffice]", function () {
 				.end(done);
 		});
 
-		it.skip("cannot be disabled if it is already disabled", (done) => {
-			done();
+		it("has a message when successfully disabled", (done) => {
+			request
+				.post(api("outOfOffice.toggle"))
+				.set(credentials)
+				.send(generateOutOfOfficeData({ isEnabled: false }))
+				.expect(200)
+				.expect("Content-Type", "application/json")
+				.expect((res) => {
+					expect(res.body).to.have.property("success", true);
+					expect(res.body).to.have.property("message");
+				})
+				.end(done);
+		});
+	});
+
+	describe("[postMessageHandler]", () => {
+		/**@type {User} */
+		let createdUser;
+		let createdUserCredentials;
+		const firstCustomMessage =
+			"_Out of Office Message_ Currently testing *PostMessageHandler*.";
+
+		before(async () => {
+			createdUser = await createUser();
+			createdUserCredentials = await login(createdUser.username, password);
+		});
+
+		before(function (done) {
+			this.timeout(7000);
+			request
+				.post(api("outOfOffice.toggle"))
+				.set(credentials)
+				.send(generateOutOfOfficeData({ customMessage: firstCustomMessage }))
+				.expect(200)
+				.end(() => setTimeout(done, 5000)); // wait for OutOfOfficeRooms collection to be populated
+		});
+
+		after(async () => {
+			await deleteUser(createdUser);
+		});
+
+		describe("user's out-of-office message is sent for the first incoming message", () => {
+			before("send 1st message to the general channel", (done) => {
+				request
+					.post(api("chat.sendMessage"))
+					.set(createdUserCredentials)
+					.send({
+						message: {
+							rid: GENERAL_CHANNEL,
+							msg: "Sending the first incoming message.",
+						},
+					})
+					.expect(200)
+					.end(() => setTimeout(done, 1000));
+			});
+
+			it("the user's out-of-office message is present", (done) => {
+				request
+					.get(api("channels.history"))
+					.query({ roomId: GENERAL_CHANNEL })
+					.query({ count: 1 })
+					.set(createdUserCredentials)
+					.expect(200)
+					.expect((res) => {
+						expect(res.body.messages[0].msg).to.eq(firstCustomMessage);
+					})
+					.end(done);
+			});
+		});
+		describe("the user's out-of-office message is not sent for the second incoming message", () => {
+			const secondMessage = "Sending the second incoming message";
+
+			before("send 2nd message to the general channel", (done) => {
+				request
+					.post(api("chat.sendMessage"))
+					.set(createdUserCredentials)
+					.send({
+						message: {
+							rid: GENERAL_CHANNEL,
+							msg: secondMessage,
+						},
+					})
+					.expect(200)
+					.end(() => setTimeout(done, 1000));
+			});
+
+			it("the last message is retained", (done) => {
+				request
+					.get(api("channels.history"))
+					.query({ roomId: GENERAL_CHANNEL })
+					.query({ count: 1 })
+					.set(createdUserCredentials)
+					.expect(200)
+					.expect((res) => {
+						expect(res.body.messages[0].msg).to.eq(secondMessage);
+					})
+					.end(done);
+			});
+		});
+
+		describe("Out-Of-Office message is not sent if it was disabled before the first incoming message", () => {
+			const secondCustomMessage =
+				"_Out Of Office_ Was disabled before first message";
+			const firstIncomingMessage = "Testing if out-office message was present";
+
+			before("enable out-of-office", function (done) {
+				this.timeout(7000);
+				request
+					.post(api("outOfOffice.toggle"))
+					.set(credentials)
+					.send(generateOutOfOfficeData({ customMessage: secondCustomMessage }))
+					.expect(200)
+					.end(() => setTimeout(done, 5000)); // wait for OutOfOfficeRooms collection to be populated
+			});
+
+			before("disable out-of-office", (done) => {
+				request
+					.post(api("outOfOffice.toggle"))
+					.set(credentials)
+					.send(generateOutOfOfficeData({ isEnabled: false }))
+					.expect(200)
+					.end(done);
+			});
+
+			before("send message to general channel", (done) => {
+				request
+					.post(api("chat.sendMessage"))
+					.set(createdUserCredentials)
+					.send({
+						message: {
+							rid: GENERAL_CHANNEL,
+							msg: firstIncomingMessage,
+						},
+					})
+					.expect(200)
+					.end(() => setTimeout(done, 1000));
+			});
+
+			it("the out-of-office message was not sent", (done) => {
+				request
+					.get(api("channels.history"))
+					.query({ roomId: GENERAL_CHANNEL })
+					.query({ count: 1 })
+					.set(createdUserCredentials)
+					.expect(200)
+					.expect((res) => {
+						expect(res.body.messages[0].msg).to.eq(firstIncomingMessage);
+					})
+					.end(done);
+			});
 		});
 	});
 
