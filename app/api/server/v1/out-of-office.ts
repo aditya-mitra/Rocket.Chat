@@ -3,7 +3,7 @@ import { check, Match } from 'meteor/check';
 import { API } from '../api';
 import { updateOutOfOffice } from '../../../out-of-office/server';
 import { outOfOfficeScheduler } from '../../../out-of-office/server/scheduler';
-import { OutOfOfficeUsers,OutOfOfficeRooms } from '../../../models/server';
+import { OutOfOfficeUsers, OutOfOfficeRooms } from '../../../models/server';
 
 API.v1.addRoute(
 	'outOfOffice.toggle',

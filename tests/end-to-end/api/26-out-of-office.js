@@ -1,16 +1,15 @@
-import { expect } from "chai";
+import { expect } from 'chai';
 
 import {
 	getCredentials,
 	api,
 	request,
 	credentials,
-} from "../../data/api-data.js";
+} from '../../data/api-data.js';
+import { password } from '../../data/user';
+import { createUser, login, deleteUser } from '../../data/users.helper';
 
-import { password } from "../../data/user";
-import { createUser, login, deleteUser } from "../../data/users.helper";
-
-const GENERAL_CHANNEL = "GENERAL";
+const GENERAL_CHANNEL = 'GENERAL';
 
 /**
  * @typedef {Object} User
@@ -33,22 +32,20 @@ const GENERAL_CHANNEL = "GENERAL";
  * @returns {OutOfOfficeData}
  */
 const generateOutOfOfficeData = (outOfOfficeData = {}) => {
-	const isEnabled =
-		typeof outOfOfficeData.isEnabled === "boolean"
-			? outOfOfficeData.isEnabled
-			: true;
+	const isEnabled =		typeof outOfOfficeData.isEnabled === 'boolean'
+		? outOfOfficeData.isEnabled
+		: true;
 	const roomIds = outOfOfficeData.roomIds
 		? outOfOfficeData.roomIds
 		: [GENERAL_CHANNEL];
-	const customMessage =
-		typeof outOfOfficeData.customMessage === "string"
-			? outOfOfficeData.customMessage
-			: "Hello, I am currently out of office!";
+	const customMessage =		typeof outOfOfficeData.customMessage === 'string'
+		? outOfOfficeData.customMessage
+		: 'Hello, I am currently out of office!';
 	const startDate = outOfOfficeData.startDate
 		? outOfOfficeData.startDate
 		: new Date().toISOString();
 
-	let endDate = outOfOfficeData.endDate;
+	let { endDate } = outOfOfficeData;
 	if (!outOfOfficeData.endDate) {
 		const endDateObject = new Date();
 		endDateObject.setHours(endDateObject.getHours() + 1);
@@ -64,7 +61,7 @@ const generateOutOfOfficeData = (outOfOfficeData = {}) => {
 	};
 };
 
-describe("[OutOfOffice]", function () {
+describe('[OutOfOffice]', function() {
 	this.retries(0);
 
 	before((done) => getCredentials(done));
@@ -72,13 +69,13 @@ describe("[OutOfOffice]", function () {
 	// only for debugging
 	// TODO - but there needs to a permenant method
 	after((done) => {
-		request.get(api("outOfOffice.removeAll")).expect(200).end(done);
+		request.get(api('outOfOffice.removeAll')).expect(200).end(done);
 	});
 
-	describe("[/outOfOffice.toggle]", () => {
-		it("cannot be enabled if the user is unauthenticated", (done) => {
+	describe('[/outOfOffice.toggle]', () => {
+		it('cannot be enabled if the user is unauthenticated', (done) => {
 			request
-				.post(api("outOfOffice.toggle"))
+				.post(api('outOfOffice.toggle'))
 				.send(generateOutOfOfficeData())
 				.expect(401)
 				.end(done);
@@ -86,12 +83,12 @@ describe("[OutOfOffice]", function () {
 
 		it('cannot be enabled if the "customMessage" is empty', (done) => {
 			request
-				.post(api("outOfOffice.toggle"))
+				.post(api('outOfOffice.toggle'))
 				.set(credentials)
-				.send(generateOutOfOfficeData({ customMessage: "" }))
+				.send(generateOutOfOfficeData({ customMessage: '' }))
 				.expect(400)
 				.expect((res) => {
-					expect(res.body).to.have.property("success", false);
+					expect(res.body).to.have.property('success', false);
 				})
 				.end(done);
 		});
@@ -101,29 +98,29 @@ describe("[OutOfOffice]", function () {
 			const outOfOfficeData = generateOutOfOfficeData();
 			delete outOfOfficeData.isEnabled;
 			request
-				.post(api("outOfOffice.toggle"))
+				.post(api('outOfOffice.toggle'))
 				.set(credentials)
 				.send(outOfOfficeData)
 				.expect(400)
 				.expect((res) => {
-					expect(res.body).to.have.property("success", false);
+					expect(res.body).to.have.property('success', false);
 				})
 				.end(done);
 		});
 
 		it('cannot be enabled if "startDate" and "endDate" are invalid ', (done) => {
 			request
-				.post(api("outOfOffice.toggle"))
+				.post(api('outOfOffice.toggle'))
 				.set(credentials)
 				.send(
 					generateOutOfOfficeData({
-						startDate: "invalid-start-date",
-						endDate: "invalid-end-date",
-					})
+						startDate: 'invalid-start-date',
+						endDate: 'invalid-end-date',
+					}),
 				)
 				.expect(400)
 				.expect((res) => {
-					expect(res.body).to.have.property("success", false);
+					expect(res.body).to.have.property('success', false);
 				})
 				.end(done);
 		});
@@ -134,17 +131,17 @@ describe("[OutOfOffice]", function () {
 			endDateObject.setHours(endDateObject.getHours() - 1);
 
 			request
-				.post(api("outOfOffice.toggle"))
+				.post(api('outOfOffice.toggle'))
 				.set(credentials)
 				.send(
 					generateOutOfOfficeData({
 						startDate: startDateObject.toISOString(),
 						endDate: endDateObject.toISOString(),
-					})
+					}),
 				)
 				.expect(400)
 				.expect((res) => {
-					expect(res.body).to.have.property("success", false);
+					expect(res.body).to.have.property('success', false);
 				})
 				.end(done);
 		});
@@ -158,61 +155,60 @@ describe("[OutOfOffice]", function () {
 			outOfOfficeData.startDate = startDateObject.toISOString();
 
 			request
-				.post(api("outOfOffice.toggle"))
+				.post(api('outOfOffice.toggle'))
 				.set(credentials)
 				.send(outOfOfficeData)
 				.expect(400)
 				.expect((res) => {
-					expect(res.body).to.have.property("success", false);
+					expect(res.body).to.have.property('success', false);
 				})
 				.end(done);
 		});
 
-		it("has a message when successfully enabled", (done) => {
+		it('has a message when successfully enabled', (done) => {
 			request
-				.post(api("outOfOffice.toggle"))
+				.post(api('outOfOffice.toggle'))
 				.set(credentials)
 				.send(generateOutOfOfficeData())
 				.expect(200)
-				.expect("Content-Type", "application/json")
+				.expect('Content-Type', 'application/json')
 				.expect((res) => {
-					expect(res.body).to.have.property("success", true);
-					expect(res.body).to.have.property("message");
+					expect(res.body).to.have.property('success', true);
+					expect(res.body).to.have.property('message');
 				})
 				.end(done);
 		});
 
-		it("has a message when successfully disabled", (done) => {
+		it('has a message when successfully disabled', (done) => {
 			request
-				.post(api("outOfOffice.toggle"))
+				.post(api('outOfOffice.toggle'))
 				.set(credentials)
 				.send(generateOutOfOfficeData({ isEnabled: false }))
 				.expect(200)
-				.expect("Content-Type", "application/json")
+				.expect('Content-Type', 'application/json')
 				.expect((res) => {
-					expect(res.body).to.have.property("success", true);
-					expect(res.body).to.have.property("message");
+					expect(res.body).to.have.property('success', true);
+					expect(res.body).to.have.property('message');
 				})
 				.end(done);
 		});
 	});
 
-	describe("[postMessageHandler]", () => {
-		/**@type {User} */
+	describe('[postMessageHandler]', () => {
+		/** @type {User} */
 		let createdUser;
 		let createdUserCredentials;
-		const firstCustomMessage =
-			"_Out of Office Message_ Currently testing *PostMessageHandler*.";
+		const firstCustomMessage =			'_Out of Office Message_ Currently testing *PostMessageHandler*.';
 
 		before(async () => {
 			createdUser = await createUser();
 			createdUserCredentials = await login(createdUser.username, password);
 		});
 
-		before(function (done) {
+		before(function(done) {
 			this.timeout(7000);
 			request
-				.post(api("outOfOffice.toggle"))
+				.post(api('outOfOffice.toggle'))
 				.set(credentials)
 				.send(generateOutOfOfficeData({ customMessage: firstCustomMessage }))
 				.expect(200)
@@ -224,14 +220,14 @@ describe("[OutOfOffice]", function () {
 		});
 
 		describe("user's out-of-office message is sent for the first incoming message", () => {
-			before("send 1st message to the general channel", (done) => {
+			before('send 1st message to the general channel', (done) => {
 				request
-					.post(api("chat.sendMessage"))
+					.post(api('chat.sendMessage'))
 					.set(createdUserCredentials)
 					.send({
 						message: {
 							rid: GENERAL_CHANNEL,
-							msg: "Sending the first incoming message.",
+							msg: 'Sending the first incoming message.',
 						},
 					})
 					.expect(200)
@@ -240,7 +236,7 @@ describe("[OutOfOffice]", function () {
 
 			it("the user's out-of-office message is present", (done) => {
 				request
-					.get(api("channels.history"))
+					.get(api('channels.history'))
 					.query({ roomId: GENERAL_CHANNEL })
 					.query({ count: 1 })
 					.set(createdUserCredentials)
@@ -252,11 +248,11 @@ describe("[OutOfOffice]", function () {
 			});
 		});
 		describe("the user's out-of-office message is not sent for the second incoming message", () => {
-			const secondMessage = "Sending the second incoming message";
+			const secondMessage = 'Sending the second incoming message';
 
-			before("send 2nd message to the general channel", (done) => {
+			before('send 2nd message to the general channel', (done) => {
 				request
-					.post(api("chat.sendMessage"))
+					.post(api('chat.sendMessage'))
 					.set(createdUserCredentials)
 					.send({
 						message: {
@@ -268,9 +264,9 @@ describe("[OutOfOffice]", function () {
 					.end(() => setTimeout(done, 1000));
 			});
 
-			it("the last message is retained", (done) => {
+			it('the last message is retained', (done) => {
 				request
-					.get(api("channels.history"))
+					.get(api('channels.history'))
 					.query({ roomId: GENERAL_CHANNEL })
 					.query({ count: 1 })
 					.set(createdUserCredentials)
@@ -282,33 +278,32 @@ describe("[OutOfOffice]", function () {
 			});
 		});
 
-		describe("Out-Of-Office message is not sent if it was disabled before the first incoming message", () => {
-			const secondCustomMessage =
-				"_Out Of Office_ Was disabled before first message";
-			const firstIncomingMessage = "Testing if out-office message was present";
+		describe('Out-Of-Office message is not sent if it was disabled before the first incoming message', () => {
+			const secondCustomMessage =				'_Out Of Office_ Was disabled before first message';
+			const firstIncomingMessage = 'Testing if out-office message was present';
 
-			before("enable out-of-office", function (done) {
+			before('enable out-of-office', function(done) {
 				this.timeout(7000);
 				request
-					.post(api("outOfOffice.toggle"))
+					.post(api('outOfOffice.toggle'))
 					.set(credentials)
 					.send(generateOutOfOfficeData({ customMessage: secondCustomMessage }))
 					.expect(200)
 					.end(() => setTimeout(done, 5000)); // wait for OutOfOfficeRooms collection to be populated
 			});
 
-			before("disable out-of-office", (done) => {
+			before('disable out-of-office', (done) => {
 				request
-					.post(api("outOfOffice.toggle"))
+					.post(api('outOfOffice.toggle'))
 					.set(credentials)
 					.send(generateOutOfOfficeData({ isEnabled: false }))
 					.expect(200)
 					.end(done);
 			});
 
-			before("send message to general channel", (done) => {
+			before('send message to general channel', (done) => {
 				request
-					.post(api("chat.sendMessage"))
+					.post(api('chat.sendMessage'))
 					.set(createdUserCredentials)
 					.send({
 						message: {
@@ -320,9 +315,9 @@ describe("[OutOfOffice]", function () {
 					.end(() => setTimeout(done, 1000));
 			});
 
-			it("the out-of-office message was not sent", (done) => {
+			it('the out-of-office message was not sent', (done) => {
 				request
-					.get(api("channels.history"))
+					.get(api('channels.history'))
 					.query({ roomId: GENERAL_CHANNEL })
 					.query({ count: 1 })
 					.set(createdUserCredentials)
@@ -335,13 +330,13 @@ describe("[OutOfOffice]", function () {
 		});
 	});
 
-	describe("[/outOfOffice.status]", () => {
-		/**@type {User} */
+	describe('[/outOfOffice.status]', () => {
+		/** @type {User} */
 		let createdUser;
 		let createdUserCredentials;
 		const createdOutOfOfficeData = generateOutOfOfficeData({
 			customMessage:
-				"_Out of Office Message_ Testing *status endpoint* currently",
+				'_Out of Office Message_ Testing *status endpoint* currently',
 		});
 
 		before(async () => {
@@ -349,9 +344,9 @@ describe("[OutOfOffice]", function () {
 			createdUserCredentials = await login(createdUser.username, password);
 		});
 
-		before(function (done) {
+		before(function(done) {
 			request
-				.post(api("outOfOffice.toggle"))
+				.post(api('outOfOffice.toggle'))
 				.set(createdUserCredentials)
 				.send(createdOutOfOfficeData)
 				.expect(200)
@@ -362,29 +357,29 @@ describe("[OutOfOffice]", function () {
 			await deleteUser(createdUser);
 		});
 
-		it("returns unauthorized if user is not authenticated", (done) => {
-			request.get(api("outOfOffice.status")).expect(401).end(done);
+		it('returns unauthorized if user is not authenticated', (done) => {
+			request.get(api('outOfOffice.status')).expect(401).end(done);
 		});
 
 		it("has the same data when user's out-of-office was enabled", (done) => {
 			request
-				.get(api("outOfOffice.status"))
+				.get(api('outOfOffice.status'))
 				.set(createdUserCredentials)
 				.expect(200)
-				.expect("Content-Type", "application/json")
+				.expect('Content-Type', 'application/json')
 				.expect((res) => {
 					expect(res.body.success).to.be.true;
 					expect(res.body).to.include.keys(
-						"isEnabled",
-						"customMessage",
-						"roomIds",
-						"startDate",
-						"endDate"
+						'isEnabled',
+						'customMessage',
+						'roomIds',
+						'startDate',
+						'endDate',
 					);
 
 					expect(res.body.isEnabled).to.be.true;
 					expect(res.body.customMessage).to.eq(
-						createdOutOfOfficeData.customMessage
+						createdOutOfOfficeData.customMessage,
 					);
 					expect(res.body.roomIds).to.deep.eq(createdOutOfOfficeData.roomIds);
 					expect(res.body.startDate).to.eq(createdOutOfOfficeData.startDate);
@@ -393,31 +388,31 @@ describe("[OutOfOffice]", function () {
 				.end(done);
 		});
 
-		describe("out-of-office data for the user is updated", () => {
+		describe('out-of-office data for the user is updated', () => {
 			const newOutOfOfficeData = generateOutOfOfficeData({
-				customMessage: "an updated custom message",
+				customMessage: 'an updated custom message',
 			});
 
 			before((done) => {
 				request
-					.post(api("outOfOffice.toggle"))
+					.post(api('outOfOffice.toggle'))
 					.set(createdUserCredentials)
 					.send(newOutOfOfficeData)
 					.expect(200)
 					.end(done);
 			});
 
-			it("has the updated out-of-office data", (done) => {
+			it('has the updated out-of-office data', (done) => {
 				request
-					.get(api("outOfOffice.status"))
+					.get(api('outOfOffice.status'))
 					.set(createdUserCredentials)
 					.expect(200)
-					.expect("Content-Type", "application/json")
+					.expect('Content-Type', 'application/json')
 					.expect((res) => {
 						expect(res.body.success).to.be.true;
 						expect(res.body.isEnabled).to.be.true;
 						expect(res.body.customMessage).to.eq(
-							newOutOfOfficeData.customMessage
+							newOutOfOfficeData.customMessage,
 						);
 						expect(res.body.roomIds).to.deep.eq(newOutOfOfficeData.roomIds);
 						expect(res.body.startDate).to.eq(newOutOfOfficeData.startDate);
