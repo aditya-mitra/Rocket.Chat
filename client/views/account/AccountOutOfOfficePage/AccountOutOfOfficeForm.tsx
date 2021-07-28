@@ -44,7 +44,7 @@ interface IFormValues {
 	roomIds: string[];
 }
 
-function getISODateStringFromDateAndTime(date: string, time: string) {
+function getISODateStringFromDateAndTime(date: string, time: string): string {
 	const dateArray = date.split('-').map((d) => parseInt(d, 10));
 	const timeArray =
 		time.split(':').length > 1 ? time.split(':').map((t) => parseInt(t, 10)) : [0, 0];

@@ -13,7 +13,7 @@ interface IDateTimeRowProps {
 	};
 }
 
-const DateTimeRow = ({ label, dateTime, handleDateTime }: IDateTimeRowProps) => (
+const DateTimeRow = ({ label, dateTime, handleDateTime }: IDateTimeRowProps): JSX.Element => (
 	<Field>
 		<Field.Label flexGrow={0}>{label}</Field.Label>
 		<Box display='flex' mi='neg-x4'>
