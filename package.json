@@ -60,7 +60,7 @@
 		"@storybook/addon-postcss": "^2.0.0",
 		"@storybook/addons": "^6.3.2",
 		"@storybook/react": "^6.3.2",
-		"@types/agenda": "^2.0.9",
+		"@types/agenda": "^4.1.0",
 		"@types/bcrypt": "^5.0.0",
 		"@types/body-parser": "^1.19.0",
 		"@types/chai": "^4.2.19",
