@@ -1,7 +1,8 @@
+import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
 
 import { API } from '../api';
-import {settings} from '../../../settings/server';
+import { settings } from '../../../settings/server';
 import { updateOutOfOffice } from '../../../out-of-office/server';
 import { outOfOfficeScheduler } from '../../../out-of-office/server/scheduler';
 import { OutOfOfficeUsers, OutOfOfficeRooms } from '../../../models/server';
@@ -11,9 +12,8 @@ API.v1.addRoute(
 	{ authRequired: true },
 	{
 		post() {
-
-			if(!settings.get('Out_Of_Office_Enabled')){
-				throw new Meteor.Error('error-not-allowed', 'Out-Of-Office Not Enabled','outOfOffice.toggle');
+			if (!settings.get('Out_Of_Office_Enabled')) {
+				throw new Meteor.Error('error-not-allowed', 'Out-Of-Office Not Enabled', 'outOfOffice.toggle');
 			}
 
 			check(
@@ -42,10 +42,10 @@ API.v1.addRoute(
 	{ authRequired: true },
 	{
 		get() {
-			if(!settings.get('Out_Of_Office_Enabled')){
-				throw new Meteor.Error('error-not-allowed', 'Out-Of-Office Not Enabled','outOfOffice.toggle');
+			if (!settings.get('Out_Of_Office_Enabled')) {
+				throw new Meteor.Error('error-not-allowed', 'Out-Of-Office Not Enabled', 'outOfOffice.toggle');
 			}
-			
+
 			const foundDocument = OutOfOfficeUsers.findOneByUserId(this.userId, {
 				fields: {
 					isEnabled: 1,

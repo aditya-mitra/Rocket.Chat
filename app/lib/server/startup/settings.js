@@ -1001,7 +1001,7 @@ settings.addGroup('General', function() {
 	});
 	this.add('Out_Of_Office_Enabled', false, {
 		type: 'boolean',
-		public:true
+		public: true,
 	});
 	this.section('UTF8', function() {
 		this.add('UTF8_Names_Validation', '[0-9a-zA-Z-_.]+', {
