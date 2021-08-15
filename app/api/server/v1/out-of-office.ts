@@ -4,8 +4,7 @@ import { check, Match } from 'meteor/check';
 import { API } from '../api';
 import { settings } from '../../../settings/server';
 import { updateOutOfOffice } from '../../../out-of-office/server';
-import { outOfOfficeScheduler } from '../../../out-of-office/server/scheduler';
-import { OutOfOfficeUsers, OutOfOfficeRooms } from '../../../models/server';
+import { OutOfOfficeUsers } from '../../../models/server';
 
 API.v1.addRoute(
 	'outOfOffice.toggle',
@@ -68,46 +67,3 @@ API.v1.addRoute(
 		},
 	},
 );
-
-// temporary - only for debugging purposes
-
-API.v1.addRoute('outOfOffice.getAll', {
-	get() {
-		const allDocuments = OutOfOfficeUsers.find({}).fetch();
-
-		return API.v1.success({
-			'all-docs': allDocuments,
-		});
-	},
-});
-
-API.v1.addRoute('outOfOffice.removeAll', {
-	get() {
-		OutOfOfficeUsers.remove({});
-		return API.v1.success({ result: 'deleted all user documents' });
-	},
-});
-
-API.v1.addRoute('outOfOffice.getAllRooms', {
-	get() {
-		return API.v1.success(OutOfOfficeRooms.find({}).fetch());
-	},
-});
-
-API.v1.addRoute('outOfOffice.removeAllRooms', {
-	get() {
-		const res = OutOfOfficeRooms.remove({});
-		return API.v1.success({ result: `deleted all room documents = ${ res }` });
-	},
-});
-
-API.v1.addRoute('outOfOffice.addJob', {
-	get() {
-		outOfOfficeScheduler.listAllJobs();
-		return API.v1.success({ get: true });
-	},
-	put() {
-		outOfOfficeScheduler.cancel();
-		return API.v1.success({ put: true });
-	},
-});

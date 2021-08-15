@@ -109,21 +109,6 @@ class OutOfOfficeScheduler {
 			data: { userId },
 		});
 	}
-
-	// only for debugging - remove later
-
-	public async listAllJobs(): Promise<void> {
-		await this.startScheduler();
-		const jobs = await this.scheduler.jobs({ name: DisableOutOfOfficeUserJob });
-		console.log(
-			'the jobs in agenda are -->',
-			jobs.map((j) => j.attrs),
-		);
-	}
-
-	public async cancel(): Promise<void> {
-		await this.scheduler.cancel({});
-	}
 }
 
 export const outOfOfficeScheduler = new OutOfOfficeScheduler();
