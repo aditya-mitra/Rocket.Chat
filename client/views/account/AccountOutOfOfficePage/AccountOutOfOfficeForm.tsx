@@ -49,10 +49,9 @@ function getISODateStringFromDateAndTime(date: string, time: string): string {
 	const timeArray =
 		time.split(':').length > 1 ? time.split(':').map((t) => parseInt(t, 10)) : [0, 0];
 
-	console.log('time=', time, 'timearray=', timeArray);
 	return new Date(
 		dateArray[0],
-		dateArray[1],
+		dateArray[1] - 1,
 		dateArray[2],
 		timeArray[0],
 		timeArray[1],
