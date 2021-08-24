@@ -67,7 +67,6 @@ describe('[OutOfOffice]', function() {
 	before((done) => getCredentials(done));
 
 	// only for debugging
-	// TODO - but there needs to a permenant method
 	after((done) => {
 		request.get(api('outout-of-office.status')).expect(200).end(done);
 	});
@@ -146,25 +145,6 @@ describe('[OutOfOffice]', function() {
 				.end(done);
 		});
 
-		// TODO - check for this validation
-		it.skip('cannot be enabled if "startDate" is before the current date', (done) => {
-			const outOfOfficeData = generateOutOfOfficeData();
-			const startDateObject = new Date();
-			startDateObject.setDate(startDateObject.getHours() - 1);
-
-			outOfOfficeData.startDate = startDateObject.toISOString();
-
-			request
-				.post(api('out-of-office.toggle'))
-				.set(credentials)
-				.send(outOfOfficeData)
-				.expect(400)
-				.expect((res) => {
-					expect(res.body).to.have.property('success', false);
-				})
-				.end(done);
-		});
-
 		it('has a message when successfully enabled', (done) => {
 			request
 				.post(api('out-of-office.toggle'))
@@ -198,7 +178,7 @@ describe('[OutOfOffice]', function() {
 		/** @type {User} */
 		let createdUser;
 		let createdUserCredentials;
-		const firstCustomMessage =			'_Out of Office Message_ Currently testing *PostMessageHandler*.';
+		const firstCustomMessage = '_Out of Office Message_ Currently testing *PostMessageHandler*.';
 
 		before(async () => {
 			createdUser = await createUser();
@@ -279,7 +259,7 @@ describe('[OutOfOffice]', function() {
 		});
 
 		describe('Out-Of-Office message is not sent if it was disabled before the first incoming message', () => {
-			const secondCustomMessage =				'_Out Of Office_ Was disabled before first message';
+			const secondCustomMessage =	'_Out Of Office_ Was disabled before first message';
 			const firstIncomingMessage = 'Testing if out-office message was present';
 
 			before('enable out-of-office', function(done) {
