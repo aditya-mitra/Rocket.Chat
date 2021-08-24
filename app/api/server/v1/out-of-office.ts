@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor';
+import {Promise} from 'meteor/promise'
 import { check, Match } from 'meteor/check';
 
 import { API } from '../api';
@@ -25,8 +26,8 @@ API.v1.addRoute(
 					endDate: String,
 				}),
 			);
-
-			const { message } = (Promise as any).await(updateOutOfOffice({
+			
+			const { message } = Promise.await(updateOutOfOffice({
 				userId: this.userId,
 				...this.bodyParams,
 			}));
