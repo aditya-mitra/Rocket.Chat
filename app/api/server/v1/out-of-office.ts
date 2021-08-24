@@ -38,12 +38,12 @@ API.v1.addRoute(
 );
 
 API.v1.addRoute(
-	'outOfOffice.status',
+	'out-of-office.status',
 	{ authRequired: true },
 	{
 		get() {
 			if (!settings.get('Out_Of_Office_Enabled')) {
-				throw new Meteor.Error('error-not-allowed', 'Out-Of-Office Not Enabled', 'outOfOffice.toggle');
+				throw new Meteor.Error('error-not-allowed', 'Out-Of-Office Not Enabled', 'out-of-office.status');
 			}
 
 			const foundDocument = OutOfOfficeUsers.findOneByUserId(this.userId, {

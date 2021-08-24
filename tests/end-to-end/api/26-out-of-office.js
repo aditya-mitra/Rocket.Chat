@@ -69,7 +69,7 @@ describe('[OutOfOffice]', function() {
 	// only for debugging
 	// TODO - but there needs to a permenant method
 	after((done) => {
-		request.get(api('outOfOffice.removeAll')).expect(200).end(done);
+		request.get(api('outout-of-office.status')).expect(200).end(done);
 	});
 
 	describe('[/out-of-office.toggle]', () => {
@@ -330,7 +330,7 @@ describe('[OutOfOffice]', function() {
 		});
 	});
 
-	describe('[/outOfOffice.status]', () => {
+	describe('[/out-of-office.status]', () => {
 		/** @type {User} */
 		let createdUser;
 		let createdUserCredentials;
@@ -358,12 +358,12 @@ describe('[OutOfOffice]', function() {
 		});
 
 		it('returns unauthorized if user is not authenticated', (done) => {
-			request.get(api('outOfOffice.status')).expect(401).end(done);
+			request.get(api('out-of-office.status')).expect(401).end(done);
 		});
 
 		it("has the same data when user's out-of-office was enabled", (done) => {
 			request
-				.get(api('outOfOffice.status'))
+				.get(api('out-of-office.status'))
 				.set(createdUserCredentials)
 				.expect(200)
 				.expect('Content-Type', 'application/json')
@@ -404,7 +404,7 @@ describe('[OutOfOffice]', function() {
 
 			it('has the updated out-of-office data', (done) => {
 				request
-					.get(api('outOfOffice.status'))
+					.get(api('out-of-office.status'))
 					.set(createdUserCredentials)
 					.expect(200)
 					.expect('Content-Type', 'application/json')
