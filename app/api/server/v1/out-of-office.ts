@@ -8,12 +8,12 @@ import { updateOutOfOffice } from '../../../out-of-office/server';
 import { OutOfOfficeUsers } from '../../../models/server';
 
 API.v1.addRoute(
-	'outOfOffice.toggle',
+	'out-of-office.toggle',
 	{ authRequired: true },
 	{
 		post() {
 			if (!settings.get('Out_Of_Office_Enabled')) {
-				throw new Meteor.Error('error-not-allowed', 'Out-Of-Office Not Enabled', 'outOfOffice.toggle');
+				throw new Meteor.Error('error-not-allowed', 'Out-Of-Office Not Enabled', 'out-of-office.toggle');
 			}
 
 			check(
