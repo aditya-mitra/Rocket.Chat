@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import {Promise} from 'meteor/promise'
+import { Promise } from 'meteor/promise';
 import { check, Match } from 'meteor/check';
 
 import { API } from '../api';
@@ -26,7 +26,7 @@ API.v1.addRoute(
 					endDate: String,
 				}),
 			);
-			
+
 			const { message } = Promise.await(updateOutOfOffice({
 				userId: this.userId,
 				...this.bodyParams,
@@ -58,7 +58,7 @@ API.v1.addRoute(
 
 			if (!foundDocument) {
 				return API.v1.success({
-					isEnabled: false
+					isEnabled: false,
 				});
 			}
 
