@@ -58,9 +58,7 @@ API.v1.addRoute(
 
 			if (!foundDocument) {
 				return API.v1.success({
-					error: 'error-not-found',
-					details:
-            'Out of Office document associated with this user-id could not be found',
+					isEnabled: false
 				});
 			}
 
